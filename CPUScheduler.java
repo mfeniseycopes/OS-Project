@@ -4,42 +4,45 @@ import java.util.ListIterator;
 public class CPUScheduler {
 
 	/**
-	 * VARIABLES
+	 * VARIABLES***************************************************************
 	 */
 	LinkedList<Integer> queue;
 	LinkedList<Integer> blocked;
 
 	/**
-	 * CONSTRUCTOR
+	 * CONSTRUCTOR*************************************************************
 	 */
 	CPUScheduler () {
 		queue = new LinkedList<Integer>();
 		blocked = new LinkedList<Integer>();
 	}
 	
+	/**
+	 * PRIVATE METHODS*********************************************************
+	 */
 
 	/**
-	 * PRIVATE METHODS
+	 * PUBLIC METHODS**********************************************************
 	 */
 	
-
 	/**
-	 * PUBLIC METHODS
+	 * Prints details of CPU Queues
 	 */
-	public void status (int[] a, int[] p) {
-		// System.out.println("-CPUScheduler setting status");
-		// if (queue.isEmpty()) {
-		// 	a[0] = 1; // No jobs to run
-		// 	System.out.println("--Idle");
-		// }
-		// else {
-		// 	int runID = queue.peek().idNum;
-		// 	Job run = JobTable.returnJob(runID);
-		// 	System.out.println("--Running with:");
-		// 	System.out.println("--Job     : " + run.idNum);
-		// 	System.out.println("--Address : " + run.address);
-		// 	System.out.println("--Size    : " + run.size);
-		// }
+	public void print () {
+		System.out.println("-CPU Report");
+		System.out.print("--Ready Jobs: ");
+		for (int i = 0; i < queue.size(); i++) {
+			int jobID = queue.remove();
+			System.out.print(jobID + ", ");
+			queue.add(jobID);
+		}
+		System.out.print("\n--Blocked Jobs: ");
+		for (int i = 0; i < blocked.size(); i++) {
+			int jobID = blocked.remove();
+			System.out.print(jobID + ", ");
+			blocked.add(jobID);
+		}
+		System.out.println("");
 	}
 
 	/**
@@ -48,9 +51,11 @@ public class CPUScheduler {
 	 * @param jobID unique identifier for jobs
 	 */
 	public void ready (int jobID) {
+		// If the job is blocked, remove from blocked list
 		if(blocked.contains(jobID)) {
 			blocked.remove((Integer)(jobID - 1));
 		}
+		// Then add to ready queue
 		queue.add(jobID);
 		System.out.println("-CPUScheduler readies job " + jobID);
 	}
@@ -60,8 +65,9 @@ public class CPUScheduler {
 	 * @return jobID of terminated job
 	 */
 	public int terminate () {
-		
+		// Removes from ready queue
 		int termJob = queue.remove();
+		// Sets to terminated in jobTable
 		JobTable.terminate(termJob);
 
 		System.out.println("-CPUScheduler terminates job " + termJob);
@@ -75,19 +81,20 @@ public class CPUScheduler {
 	 * @return int jobID or -1 if no job running
 	 */
 	public int current () {
+		// Returns next queue element if queue not empty
 		if (!queue.isEmpty()){
-			System.out.println("--Queue is not empty" + queue.size());
-			for (int i = 0; i < queue.size(); i++) {
-				System.out.println(queue.get(i));
-			}
 			return queue.peek();
 		}
 		else {
-			System.out.println("--Queue is empty");
 			return -1;
 		}
 	}
 
+	/**
+	 * Tells if job is on blocked list
+	 * @param  jobID job to query
+	 * @return       if the job is blocked
+	 */
 	public boolean isBlocked (int jobID) {
 		return blocked.contains(jobID);
 	}
@@ -98,10 +105,8 @@ public class CPUScheduler {
 	 */
 	public void block () {
 		System.out.println("-CPUScheduler blocks current job");
-		int block = queue.remove();
-		blocked.add(block);
+		blocked.add(queue.remove());
 	}
-
 
 	/**
 	 * Sends next process to cpu by moving head element to end of queue
@@ -111,9 +116,11 @@ public class CPUScheduler {
 		queue.add(queue.remove());
 	}
 
-	public void print () {
-		for (int i = 0; i < queue.size(); i++) {
-			System.out.println("Will print queue");
-		}
+	/**
+	 * Provides the size of the ready queue
+	 * @return the size of the ready queue
+	 */
+	public int queueSize() {
+		return queue.size();
 	}
-}
+ }

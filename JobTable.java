@@ -40,6 +40,10 @@ public class JobTable {
 		table.get(jobID - 1).address = address;
 	}
 
+	public static void clearAddress (int jobID) {
+		table.get(jobID - 1).address = -1;
+	}
+
 	/**
 	 * Returns direction of drum swap
 	 * @param  jobID jobID of job
@@ -138,10 +142,12 @@ public class JobTable {
 		System.out.println("-JobTable Report");
 		System.out.print("--Jobs ");
 		for (int i = 0; i < table.size(); i++) {
-			if (!table.get(i).terminated) {
-				System.out.print((i+1) + " ,");
+			String t = "";
+			if (table.get(i).terminated) {
+				t = "T";
 			}
+			System.out.print((table.get(i).idNum) + ":" + t + ", ");
 		}
-		System.out.println(" Running");
+		System.out.println("");
 	}
 }

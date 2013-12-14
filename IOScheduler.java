@@ -5,14 +5,14 @@ public class IOScheduler {
 	
 
 	/**
-	 * VARIABLES
+	 * VARIABLES***************************************************************
 	 */
 	Queue<Integer> ioQueue;
 	Queue<Integer> priQueue;
 	int inIO;
 
 	/**
-	 * CONSTRUCTOR
+	 * CONSTRUCTOR*************************************************************
 	 */
 	IOScheduler () {
 		ioQueue = new ArrayDeque<Integer>();
@@ -21,20 +21,41 @@ public class IOScheduler {
 	}
 
 	/**
-	 * PRIVATE METHODS
+	 * PRIVATE METHODS*********************************************************
 	 */
 	
 
 	/**
-	 * PUBLIC METHODS
+	 * PUBLIC METHODS**********************************************************
 	 */
 	
+	/**
+	 * Prints status of I/O
+	 */
+	public void print () {
+		System.out.println("-I/O Report:");
+		System.out.println("--In I/O: " + inIO);
+		System.out.print("--Next In Queue: ");
+		if (!ioQueue.isEmpty()) {
+			System.out.println(ioQueue.peek());
+		}
+		else {
+			System.out.println("Nothing");
+		}
+	}
 
+	/**
+	 * Checks to see if given job is doing I/O
+	 * @param  jobID job to query
+	 * @return       boolean true if job in I/O, false otherwise
+	 */
 	public boolean doingIO (int jobID) {
 		if (jobID == inIO) {
+			System.out.println("--Job " + jobID + " is doing I/O");
 			return true;
 		}
 		else {
+			System.out.println("--Job " + jobID + " is not doing I/O");
 			return false;
 		}
 	}
@@ -73,6 +94,7 @@ public class IOScheduler {
 		// Checks priority queue, handles the olded blocked job 
 		// which is waiting to complete I/O
 		if (!priQueue.isEmpty()) {
+			// If I/O is still valid (job not terminated)
 			if (JobTable.getAddress(priQueue.peek()) != -1) {
 				inIO = priQueue.remove();
 				sos.siodisk(inIO);
@@ -104,11 +126,15 @@ public class IOScheduler {
 				}
 			}
 		}
-
+		// Returns the job which finished and the next job to try in memory
 		int[] returnFields = {jobID, memJob};
 		return returnFields;
 	}
 
+	/**
+	 * Clears given jobs pending I/O and invalidates any current I/O
+	 * @param jobID job to query
+	 */
 	public void clear (int jobID) {
 		System.out.println("-IOScheduler clearing job's I/O");
 		// Clears pendingIO count in jobTable
@@ -129,16 +155,6 @@ public class IOScheduler {
 		}
 	}
 
-	public void print () {
-		System.out.println("-I//O Report:");
-		System.out.println("--In I//O: " + inIO);
-		System.out.print("--Next In Queue: ");
-		if (!ioQueue.isEmpty()) {
-			System.out.println(ioQueue.peek());
-		}
-		else {
-			System.out.println("Nothing");
-		}
-	}
+	
 
 }

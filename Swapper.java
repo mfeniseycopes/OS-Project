@@ -48,10 +48,24 @@ public class Swapper {
 	 */
 	
 	/**
+	 * Prints status of Drum and Drum Queue
+	 */
+	public void print () {
+		System.out.println("-Swap Report:");
+		System.out.println("--In Drum: " + inDrum);
+		System.out.print("--Next In Queue: ");
+		if (!swapQueue.isEmpty()) {
+			System.out.println(swapQueue.peek());
+		}
+		else {
+			System.out.println("Nothing");
+		}
+	}
+
+	/**
 	 * [swapIn description]
 	 * @param jobID [description]
 	 */
-	
 	public void swapIn (int jobID) {
 		System.out.println("-Swapper beginning swap in");
 
@@ -64,6 +78,8 @@ public class Swapper {
 	 */
 	public void swapOut (int jobID) {
 		System.out.println("-Swapper beginning swap out");
+
+		JobTable.setDirection(jobID, 1);
 		if (inDrum == -1 && swapQueue.isEmpty()){
 			System.out.println("--Swap starting");
 			inDrum = jobID;
@@ -120,16 +136,6 @@ public class Swapper {
 		return jobID;
 	}
 
-	public void print () {
-		System.out.println("-Swap Report:");
-		System.out.println("--In Drum: " + inDrum);
-		System.out.print("--Next In Queue: ");
-		if (!swapQueue.isEmpty()) {
-			System.out.println(swapQueue.peek());
-		}
-		else {
-			System.out.println("Nothing");
-		}
-	}
+	
 
 }
