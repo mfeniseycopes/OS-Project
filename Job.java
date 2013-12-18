@@ -4,25 +4,39 @@ public class Job {
 // 		p[5]: current time
 		// This will model after job given by sos in Crint
 	int idNum;
+	int priority;
 	int size;
+	int maxCPUTime;
 	int address;
+	int currentCPUTime;
 	int pendingIO;
 	int direction; // 0 = Drum-to-Memory, 1 = Memory-to-Drum, -1 = No Swap
-	int currentTime;
-	int maxTime;
+	
 	boolean terminated;
+	int priorityTime;
+	boolean latched; // doing IO
+	boolean ready;
+	boolean blocked;
 
 	/**
 	 * CONSTRUCTOR
 	 */
 	Job (int[] p) {
-		idNum = p[1];
-		size = p[3];
-		address = -1;
-		pendingIO = 0;
-		direction = -1;
-		currentTime = 0;
-		maxTime = p[4];
-		terminated = false;
+		// From sos
+		idNum 		= p[1];
+		priority 	= p[2];
+		size 		= p[3];
+		maxCPUTime 	= p[4];
+		priorityTime = p[5];
+		address 	= -1;
+		// Defaults
+		currentCPUTime = 0;
+		pendingIO	= 0;
+		direction 	= -1;
+		terminated 	= false;
+		latched = false;
+		ready = false;
+		blocked = false;
+		
 	}
 }

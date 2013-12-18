@@ -68,9 +68,12 @@ public class IOScheduler {
 	 */
 	public void add (int jobID) {
 		System.out.println("-IOScheduler accepts new job");
+		JobTable.incrementIO(jobID);
+		//ioQueue.add(jobID);
 		if (inIO == -1 && ioQueue.isEmpty()) {
 			System.out.println("--Job is sent to do I/O");
 			inIO = jobID;
+			JobTable.setDoingIO(inIO);
 			sos.siodisk(inIO);
 		}
 		else {
@@ -87,6 +90,18 @@ public class IOScheduler {
 	 *               process that needs to be brought into memory
 	 */
 	public int[] ioDone () {
+
+		// If job which finished I/O is valid
+		if (inIO != -1) {
+			// Decrement & get it's I/O pending
+			JobTable.decrementIO(inIO);
+			JobTable.unsetDoingIO(inIO);
+			// If the job is ready to be unblocked
+			if (JobTable.getIO(inIO) == 0 && JobTable.isBlocked(inIO)) {
+				JobTable.unsetBlocked(inIO);
+			}
+		}
+
 		int jobID = inIO;
 		int memJob = -1;
 		boolean jobAcquired = false;
@@ -97,6 +112,7 @@ public class IOScheduler {
 			// If I/O is still valid (job not terminated)
 			if (JobTable.getAddress(priQueue.peek()) != -1) {
 				inIO = priQueue.remove();
+				JobTable.setDoingIO(inIO);
 				sos.siodisk(inIO);
 				jobAcquired = true;
 			}
@@ -110,6 +126,7 @@ public class IOScheduler {
 				// If the next I/O requester is in memory, start it
 				if (JobTable.getAddress(ioQueue.peek()) != -1) {
 					inIO = ioQueue.remove();
+					JobTable.setDoingIO(inIO);
 					sos.siodisk(inIO);
 				}
 				// If the next I/O is not in memory,
@@ -123,6 +140,7 @@ public class IOScheduler {
 					else {
 						ioQueue.add(memJob);
 					}
+					inIO = -1;
 				}
 			}
 		}
@@ -149,10 +167,10 @@ public class IOScheduler {
 			}
 			System.out.println("--Removed " + count + " from queue");
 		}
-		if (inIO == jobID) {
-			inIO = -1;
-			System.out.println("--Current I/O marked as invalid");
-		}
+		// if (inIO == jobID) {
+		// 	inIO = -1;
+		// 	System.out.println("--Current I/O marked as invalid");
+		// }
 	}
 
 	

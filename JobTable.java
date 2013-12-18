@@ -20,6 +20,98 @@ public class JobTable {
 		table.add(newJob);
 	}
 
+	public static int getPriority (int jobID) {
+		return table.get(jobID - 1).priority;
+	}
+
+	public static void raisePriority (int jobID) {
+		if (table.get(jobID - 1).priority != 5) {
+			resetPriorityTime(jobID);
+			table.get(jobID - 1).priority = table.get(jobID - 1).priority - 1;
+		}
+	}
+
+	public static void lowerPriority (int jobID) {
+		if (table.get(jobID - 1).priority != 5) {
+			resetPriorityTime(jobID);
+			table.get(jobID - 1).priority = table.get(jobID - 1).priority + 1;
+			System.out.println("Priority value increased");
+		}
+		else {
+			System.out.println("Nothing happened.");
+		}
+	}
+
+	public static boolean doingIO(int jobID) {
+		if (jobID != -1) {
+			return table.get(jobID - 1).latched;
+		}
+		else {
+			return false;
+		}
+	}
+
+	public static void setDoingIO (int jobID) {
+		if (jobID != -1) {
+			System.out.println("-JobTable sets " + jobID + " to latched");
+			table.get(jobID - 1).latched = true;
+		}
+	}
+
+	public static void unsetDoingIO (int jobID) {
+		if (jobID != -1) {
+			System.out.println("-JobTable sets " + jobID + " to unlatched");
+			table.get(jobID - 1).latched = false;
+		}
+	}
+
+	public static boolean isBlocked(int jobID) {
+		if (jobID != -1) {
+			return table.get(jobID - 1).blocked;
+		}
+		else {
+			return false;
+		}
+	}
+
+	public static void setBlocked (int jobID) {
+		if (jobID != -1) {
+			System.out.println("-JobTable sets " + jobID + " to blocked");
+			table.get(jobID - 1).blocked = true;
+		}
+	}
+
+	public static void unsetBlocked (int jobID) {
+		if (jobID != -1) {
+			System.out.println("-JobTable sets " + jobID + " to unblocked");
+			table.get(jobID - 1).blocked = false;
+		}
+	}
+
+	public static boolean isReady(int jobID) {
+		if (jobID != -1) {
+			return table.get(jobID - 1).ready;
+		}
+		else {
+			return false;
+		}
+	}
+
+	public static void setReady (int jobID) {
+		if (jobID != -1) {
+			System.out.println("-JobTable sets " + jobID + " as ready");
+			table.get(jobID - 1).ready = true;
+		}
+	}
+
+	public static void unsetReady (int jobID) {
+		if (jobID != -1) {
+			System.out.println("-JobTable sets " + jobID + " to unready");
+			table.get(jobID - 1).ready = false;
+		}
+	}
+
+
 	/**
 	 * Returns memory address for given job
 	 * This will be in place even if the job is not yet in memory
@@ -39,7 +131,10 @@ public class JobTable {
 	public static void setAddress (int jobID, int address) {
 		table.get(jobID - 1).address = address;
 	}
-
+	/**
+	 * Clears set address for given job
+	 * @param jobID 
+	 */
 	public static void clearAddress (int jobID) {
 		table.get(jobID - 1).address = -1;
 	}
@@ -67,7 +162,7 @@ public class JobTable {
 		return table.get(jobID -1).size;
 	}
 
-	public static int returnIO (int jobID) {
+	public static int getIO (int jobID) {
 		return table.get(jobID - 1).pendingIO;
 	}
 	
@@ -122,7 +217,15 @@ public class JobTable {
 	 * @return       job time remaining
 	 */
 	public static void incrementTime (int jobID, int time) {
-		table.get(jobID - 1).currentTime = table.get(jobID - 1).currentTime + time;
+		table.get(jobID - 1).currentCPUTime = table.get(jobID - 1).currentCPUTime + time;
+	}
+
+	public static int getCurrentCPUTime (int jobID) {
+		return table.get(jobID - 1).currentCPUTime;
+	}
+
+	public static int getMaxCPUTime (int jobID) {
+		return table.get(jobID - 1).maxCPUTime;
 	}
 
 	/**
@@ -130,12 +233,29 @@ public class JobTable {
 	 * @param  jobID jobID of job to be queried
 	 * @return       the CPU time remaining
 	 */
-	public static int returnTimeLeft (int jobID) {
-		return (table.get(jobID - 1).maxTime - table.get(jobID - 1).currentTime);
+	public static int getTimeLeft (int jobID) {
+		if (jobID != -1) {
+			return (table.get(jobID - 1).maxCPUTime - table.get(jobID - 1).currentCPUTime);
+		}
+		else {
+			return -1;
+		}
+	}
+
+	public static int getPriorityTime (int jobID) {
+		return table.get(jobID -1).priorityTime;
+	}
+
+	public static void resetPriorityTime (int jobID) {
+		table.get(jobID -1).priorityTime = os.currentTime;
 	}
 
 	public static void terminate(int jobID) {
 		table.get(jobID-1).terminated = true;
+	}
+
+	public static boolean isTerminated (int jobID) {
+		return table.get(jobID-1).terminated;
 	}
 
 	public void print () {
@@ -143,10 +263,18 @@ public class JobTable {
 		System.out.print("--Jobs ");
 		for (int i = 0; i < table.size(); i++) {
 			String t = "";
+			String b = "";
+			String r = "";
 			if (table.get(i).terminated) {
 				t = "T";
 			}
-			System.out.print((table.get(i).idNum) + ":" + t + ", ");
+			if (table.get(i).blocked) {
+				b = "B";
+			}
+			if (table.get(i).ready) {
+				r = "R";
+			}
+			System.out.print((table.get(i).idNum) + ":" + t + b + r + ", ");
 		}
 		System.out.println("");
 	}
