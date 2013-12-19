@@ -12,6 +12,7 @@ public class Job {
 	int pendingIO;
 	int direction; // 0 = Drum-to-Memory, 1 = Memory-to-Drum, -1 = No Swap
 	
+	boolean inMemory;
 	boolean terminated;
 	int priorityTime;
 	boolean latched; // doing IO
@@ -31,6 +32,7 @@ public class Job {
 		address 	= -1;
 		// Defaults
 		currentCPUTime = 0;
+		inMemory = false;
 		pendingIO	= 0;
 		direction 	= -1;
 		terminated 	= false;

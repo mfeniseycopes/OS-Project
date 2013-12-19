@@ -89,20 +89,18 @@ public class os {
 		div();
 	}
 
-
-	public static void freeBackedJob() {
-
-	}
-
 	public static void rescan (int[] a, int[] p) {
+		System.out.println("****RESCAN****");
+
 		// Moves CPU to next job in queue if slice done
 		// returnVars[0] : Job exceeding maxTime (needs memory freed)
 		// returnVars[1] : Job exceeding priority time
 		int[] returnVars = cpuScheduler.next(a, p);
 
-		swapper.swap(memoryManager.free(returnVars[0]));
+		memoryManager.newTerminated(returnVars[0]);
 
 		swapper.swapOut(returnVars[1]);
+		//swapper.swapIn(memoryManager.find());
 	}
 
 	/**
@@ -154,13 +152,8 @@ public class os {
 		int jobID = jobID_jobNeedsMemory[0];
 		int jobNeedsMemory = jobID_jobNeedsMemory[1];
 
-		// Check to see if job was waiting for I/O when terminated
-		// If so, free the memory
-		if (JobTable.isTerminated(jobID)) {
-			swapper.swap(memoryManager.free(jobID));
-		}
-		// Otherwise, ready the job
-		else {
+		// If job isn't terminated
+		if (!JobTable.isTerminated(jobID)) {
 			cpuScheduler.ready(jobID);
 		}
 
@@ -191,16 +184,21 @@ public class os {
 
 		// Gets completed memory swap from swapper
 		int jobID = swapper.swapDone();
+
+		
 		// Gets completed swap Direction
 		int direction = jobTable.getDirection(jobID);
 		// If swapped into memory, ready job
 		if (direction == 0) {
+			// Adds to memoryManager inMemory list
+			memoryManager.addToMemory(jobID);
+			// Adds to cpu ready list
 			cpuScheduler.ready(jobID);
 		}
 		// Otherwise, free the space
 		else if (direction == 1) {
-			int newSwapID = memoryManager.free(jobID);
-			swapper.swapIn(newSwapID);
+			memoryManager.free(jobID);
+			swapper.swapIn(memoryManager.find());
 		}
 
 		rescan(a, p);
@@ -227,7 +225,7 @@ public class os {
 		// returnVars[1] : Job exceeding priority time
 		int[] returnVars = cpuScheduler.next(a, p);
 
-		swapper.swap(memoryManager.free(returnVars[0]));
+		memoryManager.newTerminated(returnVars[0]);
 
 		if (!ioScheduler.doingIO(returnVars[1])) {
 			swapper.swapOut(returnVars[1]);
@@ -258,10 +256,9 @@ public class os {
 			System.out.println("Requesting termination");
 			int jobID = cpuScheduler.terminate();
 			jobTable.setDirection(jobID, -1); // Job swaps out of memory automatically
-			//swapper.swap(memoryManager.free(jobID));
-			//memoryManager.free(jobID);
+
 			memoryManager.newTerminated(jobID);
-			ioScheduler.clear(jobID);
+
 			
 		}
 		// The job is requesting another I/O operation
@@ -287,8 +284,7 @@ public class os {
 			else if (jobTable.getIO(jobID) > 0) {
 				System.out.println("-I/O: Job has pending I/O");
 				cpuScheduler.block();
-				//memoryManager.free(jobID);
-				if (cpuScheduler.queueSize() > 3) {
+				if (memoryManager.smartSwap()) {
 					swapper.swapOut(jobID);
 				}
 				

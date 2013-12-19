@@ -97,6 +97,14 @@ public class JobTable {
 		}
 	}
 
+	public static void inMemory(int jobID) {
+		table.get(jobID -1).inMemory = true;
+	}
+
+	public static void outMemory(int jobID) {
+		table.get(jobID -1).inMemory = false;
+	}
+
 	public static void setReady (int jobID) {
 		if (jobID != -1) {
 			System.out.println("-JobTable sets " + jobID + " as ready");
@@ -136,7 +144,9 @@ public class JobTable {
 	 * @param jobID 
 	 */
 	public static void clearAddress (int jobID) {
-		table.get(jobID - 1).address = -1;
+		if (!table.get(jobID-1).inMemory) {
+			table.get(jobID - 1).address = -1;
+		}
 	}
 
 	/**

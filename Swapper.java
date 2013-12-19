@@ -97,9 +97,11 @@ public class Swapper {
 		// Status
 		if (job.direction == 1) {
 			System.out.println("--Memory-to-Drum done for job " + jobID);
+			JobTable.outMemory(jobID);
 		}
 		else {
 			System.out.println("--Drum-to-Memory done for job " + jobID);
+			JobTable.inMemory(jobID);
 		}
 		//JobTable.setDirection (jobID, -1);
 
