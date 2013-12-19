@@ -6,6 +6,7 @@ public class PriorityQueue {
 	LinkedList<Integer> q3;
 	LinkedList<Integer> q4;
 	LinkedList<Integer> q5;
+	int size;
 
 	PriorityQueue () {
 		q1 = new LinkedList<Integer>();
@@ -13,6 +14,7 @@ public class PriorityQueue {
 		q3 = new LinkedList<Integer>();
 		q4 = new LinkedList<Integer>();
 		q5 = new LinkedList<Integer>();
+		size = 0;
 	}
 
 
@@ -21,7 +23,6 @@ public class PriorityQueue {
 			switch (JobTable.getPriority(jobID)) {
 				case 1:  q1.add(jobID);
 						 System.out.println("Added to q1");
-
 	                     break;
 	            case 2:  q2.add(jobID);
 	            		 System.out.println("Added to q2");
@@ -36,7 +37,7 @@ public class PriorityQueue {
 	            		 System.out.println("Added to q5");
 	                     break;
 			}
-
+			size++;
 			print();
 		}
 		else {
@@ -45,7 +46,6 @@ public class PriorityQueue {
 	}
 
 	void remove (int jobID) {
-		int i = -1;
 		switch (JobTable.getPriority(jobID)) {
 			case 1: q1.remove((Integer)jobID);
 					System.out.println("Removed from q1");
@@ -63,7 +63,7 @@ public class PriorityQueue {
 		            System.out.println("Removed from q5");
                     break;
 		}
-		return ;
+		size--;
 	}
 
 	void raisePriority (int jobID) {
@@ -79,7 +79,7 @@ public class PriorityQueue {
 		add(jobID);
 	}
 
-	int getNext () {
+	int removeNext () {
 		int nextJob = -1;
 		if (!q1.isEmpty()) {
 			nextJob = q1.remove();
@@ -96,8 +96,19 @@ public class PriorityQueue {
 		else if (!q5.isEmpty()) {
 			nextJob = q5.remove();
 		}
-
+		if (nextJob != -1) {
+			size--;
+		}
 		return nextJob;
+	}
+
+	boolean isEmpty () {
+		if (size == 0) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	void print () {
@@ -126,12 +137,6 @@ public class PriorityQueue {
 	}
 
 	int size () {
-		int count = 0;
-		count = count + q1.size();
-		count = count + q2.size();
-		count = count + q3.size();
-		count = count + q4.size();
-		count = count + q5.size();
-		return count;
+		return size;
 	}
 }

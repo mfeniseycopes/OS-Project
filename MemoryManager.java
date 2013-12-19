@@ -362,7 +362,7 @@ public class MemoryManager {
 				blockedCount++;
 			}
 		}
-		if (jobsInMemory.size() - blockedCount < 3) {
+		if (jobsInMemory.size() - blockedCount < 3 && jobsInMemory.size() >= 4) {
 			return true;
 		}
 		else {

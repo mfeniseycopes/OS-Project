@@ -100,7 +100,8 @@ public class os {
 		memoryManager.newTerminated(returnVars[0]);
 
 		swapper.swapOut(returnVars[1]);
-		//swapper.swapIn(memoryManager.find());
+		swapper.swapIn(memoryManager.find());
+
 	}
 
 	/**
@@ -122,8 +123,7 @@ public class os {
 		jobTable.add(p);
 
 		// If room found in memory, begin swapping
-		int swapJobID = memoryManager.add(jobID);
-		swapper.swap(swapJobID);
+		swapper.swapIn(memoryManager.add(jobID));
 
 		rescan(a, p);
 		// Report
@@ -160,7 +160,7 @@ public class os {
 		// If there is a job that needs memory
 		if (jobNeedsMemory != -1) {
 			// Place it in the memory queue
-			swapper.swap(memoryManager.add(jobNeedsMemory));
+			swapper.swapIn(memoryManager.add(jobNeedsMemory));
 		}
 
 		rescan(a, p);
@@ -220,16 +220,16 @@ public class os {
 		dispatcher.update (a, p);
 		cpuScheduler.update();
 
-		// Moves CPU to next job in queue
-		// returnVars[0] : Job exceeding maxTime (needs memory freed)
-		// returnVars[1] : Job exceeding priority time
-		int[] returnVars = cpuScheduler.next(a, p);
+		// // Moves CPU to next job in queue
+		// // returnVars[0] : Job exceeding maxTime (needs memory freed)
+		// // returnVars[1] : Job exceeding priority time
+		// int[] returnVars = cpuScheduler.next(a, p);
 
-		memoryManager.newTerminated(returnVars[0]);
+		// memoryManager.newTerminated(returnVars[0]);
 
-		if (!ioScheduler.doingIO(returnVars[1])) {
-			swapper.swapOut(returnVars[1]);
-		}
+		// if (!ioScheduler.doingIO(returnVars[1])) {
+		// 	swapper.swapOut(returnVars[1]);
+		// }
 		
 		
 		rescan(a, p);

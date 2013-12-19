@@ -49,6 +49,7 @@ public class CPUScheduler {
 		System.out.println("-CPU Report");
 		System.out.println("--In CPU  : " + runningJob);
 		System.out.println("");
+		queue.print();
 	}
 
 	public void update() {
@@ -73,7 +74,6 @@ public class CPUScheduler {
 			JobTable.setReady(jobID);
 			System.out.println("-CPUScheduler readies job " + jobID + " with priority " + JobTable.getPriority(jobID));
 		}
-		
 		print();
 	}
 
@@ -102,15 +102,6 @@ public class CPUScheduler {
 	public int current () {
 		return runningJob;
 	}
-
-	// /**
-	//  * Tells if job is on blocked list
-	//  * @param  jobID job to query
-	//  * @return       if the job is blocked
-	//  */
-	// public boolean isBlocked (int jobID) {
-	// 	return blocked.contains(jobID);
-	// }
 
 	/**
 	 * Blocks currently running job by removing from queue and
@@ -154,7 +145,7 @@ public class CPUScheduler {
 			// potential swapout
 			else if ((os.currentTime - JobTable.getPriorityTime(runningJob)) >= RUN_WAIT) {
 				System.out.println("-CPUScheduler reduces priority of Job " + runningJob);
-				if (queue.size() > 3 && !JobTable.doingIO(runningJob)) {
+				if (!JobTable.doingIO(runningJob)) {
 					returnVars[1] = runningJob;
 					JobTable.lowerPriority(runningJob);
 					JobTable.unsetReady(runningJob);
@@ -172,7 +163,7 @@ public class CPUScheduler {
 		}
 		// If there is no running job yet
 		if (runningJob == -1) {
-			runningJob = queue.getNext();
+			runningJob = queue.removeNext();
 			System.out.println("Next job = " + runningJob);
 			slice = getSlice(runningJob, TIMESLICE);
 		}
