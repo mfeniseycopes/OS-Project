@@ -27,6 +27,7 @@ public class IOScheduler {
 	 * PRIVATE METHODS*********************************************************
 	 */
 	void ioCheck () {
+		System.out.println("-I/O Queues:");
 		System.out.println("--BlockedIn Queue has " + blockedInQueue.size());
 		System.out.println("--Terminated Queue has " + terminatedQueue.size());
 		System.out.println("--Default Queue has " + defaultQueue.size());

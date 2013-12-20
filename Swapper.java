@@ -1,5 +1,4 @@
-import java.util.Queue;
-import java.util.ArrayDeque;
+import java.util.LinkedList;
 
 public class Swapper {
 
@@ -9,42 +8,103 @@ public class Swapper {
 	/**
 	 * VARIABLES***************************************************************
 	 */
-	PriorityQueue swapQueue;
-
-	//Queue<Integer> swapQueue;
+	//PriorityQueue swapQueue;
+	LinkedList<Integer> blockedOutQueue;
+	LinkedList<Integer> blockedInQueue;
+	LinkedList<Integer> defaultOutQueue;
+	LinkedList<Integer> defaultInQueue;
 	int inDrum;
 
 	/**
 	 * CONSTRUCTOR*************************************************************
 	 */
 	Swapper () {
-		swapQueue = new PriorityQueue();
+		//swapQueue = new PriorityQueue();
+		blockedOutQueue = new LinkedList<Integer>(); // To go out
+		blockedInQueue = new LinkedList<Integer>();
+		defaultOutQueue = new LinkedList<Integer>();
+		defaultInQueue = new LinkedList<Integer>();
 		inDrum = -1;
 	}
 	
 	/**
 	 * PRIVATE METHODS*********************************************************
 	 */
+	void add (int jobID) {
+		// In Queues
+		if (JobTable.getDirection(jobID) == 0) {
+			// Blocked
+			if (JobTable.isBlocked(jobID)) {
+				blockedInQueue.add(jobID);
+			}
+			// Default
+			else {
+				defaultInQueue.add(jobID);
+			}
+		}
+		else {
+			// Blocked
+			if (JobTable.isBlocked(jobID)) {
+				blockedOutQueue.add(jobID);
+			}
+			// Default
+			else {
+				defaultOutQueue.add(jobID);
+			}
+		}
+	}
 
 	/**
 	 * PUBLIC METHODS**********************************************************
 	 */
 	
 	public void swap () {
-		if (inDrum == -1 && !swapQueue.isEmpty()) {
-			inDrum = swapQueue.removeNext();
-			Job swapJob = JobTable.returnJob(inDrum);
-			sos.siodrum (swapJob.idNum, swapJob.size, swapJob.address, swapJob.direction);
-			String descriptor = "";
-			if (swapJob.direction == 0) {
-				descriptor = " to ";
+		System.out.println("-Swap Queues:");
+		System.out.println("--BlockedOut Queue has " + blockedOutQueue.size());
+		System.out.println("--BlockedIn Queue has " + blockedInQueue.size());
+		System.out.println("--DefaultIn Queue has " + defaultInQueue.size());
+		System.out.println("--DefaultOut Queue has " + defaultOutQueue.size());
+		if (inDrum == -1) {
+			if (!blockedOutQueue.isEmpty()) {
+				inDrum = blockedOutQueue.remove();
 			}
-			else if (swapJob.direction == 1) {
-				descriptor = " from ";
+			else if (!blockedInQueue.isEmpty()) {
+				inDrum = blockedInQueue.remove();
 			}
-			System.out.println("--Begin swapping Job " + swapJob.idNum +
-				" with size " + swapJob.size + descriptor + swapJob.address);
+			else if (!defaultOutQueue.isEmpty()) {
+				inDrum = defaultOutQueue.remove();
+			}
+			else if (!defaultInQueue.isEmpty()) {
+				inDrum = defaultInQueue.remove();
+			}
+			if (inDrum != -1) {
+				Job swapJob = JobTable.returnJob(inDrum);
+				sos.siodrum (swapJob.idNum, swapJob.size, swapJob.address, swapJob.direction);
+				String descriptor = "";
+				if (swapJob.direction == 0) {
+					descriptor = " to ";
+				}
+				else if (swapJob.direction == 1) {
+					descriptor = " from ";
+				}
+				System.out.println("--Begin swapping Job " + swapJob.idNum +
+					" with size " + swapJob.size + descriptor + swapJob.address);
+			}
 		}
+		//  && !swapQueue.isEmpty()) {
+		// 	inDrum = swapQueue.removeNext();
+		// 	Job swapJob = JobTable.returnJob(inDrum);
+		// 	sos.siodrum (swapJob.idNum, swapJob.size, swapJob.address, swapJob.direction);
+		// 	String descriptor = "";
+		// 	if (swapJob.direction == 0) {
+		// 		descriptor = " to ";
+		// 	}
+		// 	else if (swapJob.direction == 1) {
+		// 		descriptor = " from ";
+		// 	}
+		// 	System.out.println("--Begin swapping Job " + swapJob.idNum +
+		// 		" with size " + swapJob.size + descriptor + swapJob.address);
+		// }
 	}
 
 	/**
@@ -53,13 +113,6 @@ public class Swapper {
 	public void print () {
 		System.out.println("-Swap Report:");
 		System.out.println("--In Drum: " + inDrum);
-		System.out.print("--Next In Queue: ");
-		if (!swapQueue.isEmpty()) {
-			swapQueue.print();
-		}
-		else {
-			System.out.println("Nothing");
-		}
 	}
 
 	/**
@@ -71,7 +124,7 @@ public class Swapper {
 			System.out.println("-Swapper beginning swap in of Job " + jobID);
 			System.out.println("--Added Job " + jobID + " to swap queue");
 			JobTable.setDirection(jobID, 0);
-			swapQueue.add(jobID);
+			add(jobID);
 		}
 	} 
 	/**
@@ -83,7 +136,7 @@ public class Swapper {
 			System.out.println("-Swapper beginning swap out of Job " + jobID);
 			System.out.println("--Added Job " + jobID + " to swap queue");
 			JobTable.setDirection(jobID, 1);
-			swapQueue.add(jobID);
+			add(jobID);
 		}
 	}
 
