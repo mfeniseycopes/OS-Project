@@ -98,13 +98,12 @@ public class os {
 		int[] returnVars = cpuScheduler.next(a, p);
 
 		memoryManager.newTerminated(returnVars[0]);
-
+		swapper.swapOut(ioScheduler.readyToLeave());
 		swapper.swapOut(returnVars[1]);
 		swapper.swapIn(memoryManager.find());
 		swapper.swap();
 
 	}
-
 	/**
 	 * Accepts new job into system
 	 * @param []a to be modified for sos

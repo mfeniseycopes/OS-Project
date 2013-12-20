@@ -17,7 +17,7 @@ public class IOScheduler {
 	 */
 	IOScheduler () {
 		defaultQueue = new LinkedList<Integer>();
-		blockedInQueue = new LinkedList<Integer>();
+		blockedInQueue = new LinkedList<Integer>(); // blocked in memory, these can run
 		blockedOutQueue = new LinkedList<Integer>();
 		terminatedQueue = new LinkedList<Integer>();
 		inIO = -1;
@@ -55,6 +55,24 @@ public class IOScheduler {
 	/**
 	 * PUBLIC METHODS**********************************************************
 	 */
+	public int readyToLeave () {
+		int swapOutBlockedJob = -1;
+		if (inIO != -1 && !blockedInQueue.isEmpty()) {
+			// for (int i = 0; i < blockedInQueue.size(); i++) {
+			// 	System.out.println("CHECK#");
+			// 	if (blockedInQueue.get(i) != inIO) {
+			// 		System.out.println("CHECK$");
+			// 		swapOutBlockedJob = blockedInQueue.get(i);
+			// 		break;
+			// 	} 
+			// }
+			if (blockedInQueue.getLast() != inIO) {
+				System.out.println("CHECK$");
+				swapOutBlockedJob = blockedInQueue.getLast();
+			}
+		}
+		return swapOutBlockedJob;
+	}
 	
 	public int ioMemCheck() {
 		if (!blockedOutQueue.isEmpty() && blockedInQueue.isEmpty()) {

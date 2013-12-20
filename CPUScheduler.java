@@ -145,7 +145,7 @@ public class CPUScheduler {
 			// potential swapout
 			else if ((os.currentTime - JobTable.getPriorityTime(runningJob)) >= RUN_WAIT) {
 				System.out.println("-CPUScheduler reduces priority of Job " + runningJob);
-				if (!JobTable.doingIO(runningJob)) {
+				if (!JobTable.doingIO(runningJob) && queue.getNext() != -1) {
 					returnVars[1] = runningJob;
 					JobTable.lowerPriority(runningJob);
 					JobTable.unsetReady(runningJob);

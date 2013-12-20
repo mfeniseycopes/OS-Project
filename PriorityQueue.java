@@ -102,6 +102,26 @@ public class PriorityQueue {
 		return nextJob;
 	}
 
+	int getNext () {
+		int nextJob = -1;
+		if (!q1.isEmpty()) {
+			nextJob = q1.getFirst();
+		}
+		else if (!q2.isEmpty()) {
+			nextJob = q2.getFirst();
+		}
+		else if (!q3.isEmpty()) {
+			nextJob = q3.getFirst();
+		}
+		else if (!q4.isEmpty()) {
+			nextJob = q4.getFirst();
+		}
+		else if (!q5.isEmpty()) {
+			nextJob = q5.getFirst();
+		}
+		return nextJob;
+	}
+
 	boolean isEmpty () {
 		if (size == 0) {
 			return true;

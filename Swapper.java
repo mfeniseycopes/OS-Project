@@ -30,7 +30,16 @@ public class Swapper {
 	/**
 	 * PRIVATE METHODS*********************************************************
 	 */
+	
+	void remove (int jobID) {
+		blockedInQueue.remove((Integer)jobID);
+		blockedOutQueue.remove((Integer)jobID);
+		defaultInQueue.remove((Integer)jobID);
+		defaultOutQueue.remove((Integer)jobID);
+	}
+
 	void add (int jobID) {
+		remove(jobID);
 		// In Queues
 		if (JobTable.getDirection(jobID) == 0) {
 			// Blocked
@@ -45,6 +54,7 @@ public class Swapper {
 		else {
 			// Blocked
 			if (JobTable.isBlocked(jobID)) {
+				blockedInQueue.remove((Integer)jobID);
 				blockedOutQueue.add(jobID);
 			}
 			// Default
@@ -65,7 +75,11 @@ public class Swapper {
 		System.out.println("--DefaultIn Queue has " + defaultInQueue.size());
 		System.out.println("--DefaultOut Queue has " + defaultOutQueue.size());
 		if (inDrum == -1) {
-			if (!blockedOutQueue.isEmpty()) {
+			if (!defaultInQueue.isEmpty()) {
+				inDrum = defaultInQueue.remove();
+			}
+			else if (!blockedOutQueue.isEmpty()) {
+
 				inDrum = blockedOutQueue.remove();
 			}
 			else if (!blockedInQueue.isEmpty()) {
@@ -74,9 +88,18 @@ public class Swapper {
 			else if (!defaultOutQueue.isEmpty()) {
 				inDrum = defaultOutQueue.remove();
 			}
-			else if (!defaultInQueue.isEmpty()) {
-				inDrum = defaultInQueue.remove();
-			}
+			// if (!blockedOutQueue.isEmpty()) {
+			// 	inDrum = blockedOutQueue.remove();
+			// }
+			// else if (!blockedInQueue.isEmpty()) {
+			// 	inDrum = blockedInQueue.remove();
+			// }
+			// else if (!defaultOutQueue.isEmpty()) {
+			// 	inDrum = defaultOutQueue.remove();
+			// }
+			// else if (!defaultInQueue.isEmpty()) {
+			// 	inDrum = defaultInQueue.remove();
+			// }
 			if (inDrum != -1) {
 				Job swapJob = JobTable.returnJob(inDrum);
 				sos.siodrum (swapJob.idNum, swapJob.size, swapJob.address, swapJob.direction);
@@ -91,20 +114,6 @@ public class Swapper {
 					" with size " + swapJob.size + descriptor + swapJob.address);
 			}
 		}
-		//  && !swapQueue.isEmpty()) {
-		// 	inDrum = swapQueue.removeNext();
-		// 	Job swapJob = JobTable.returnJob(inDrum);
-		// 	sos.siodrum (swapJob.idNum, swapJob.size, swapJob.address, swapJob.direction);
-		// 	String descriptor = "";
-		// 	if (swapJob.direction == 0) {
-		// 		descriptor = " to ";
-		// 	}
-		// 	else if (swapJob.direction == 1) {
-		// 		descriptor = " from ";
-		// 	}
-		// 	System.out.println("--Begin swapping Job " + swapJob.idNum +
-		// 		" with size " + swapJob.size + descriptor + swapJob.address);
-		// }
 	}
 
 	/**
@@ -112,7 +121,25 @@ public class Swapper {
 	 */
 	public void print () {
 		System.out.println("-Swap Report:");
-		System.out.println("--In Drum: " + inDrum);
+		System.out.println("--In Drum : " + inDrum);
+		System.out.print("--In Queue: ");
+		System.out.print("DefaultIn:");
+		for (int i = 0; i < defaultInQueue.size(); i++) {
+			System.out.print(defaultInQueue.get(i) + ", ");
+		}
+		System.out.print("BlockedOut:");
+		for (int i = 0; i < blockedOutQueue.size(); i++) {
+			System.out.print(blockedOutQueue.get(i) + ", ");
+		}
+		System.out.print("BlockedIn:");
+		for (int i = 0; i < blockedInQueue.size(); i++) {
+			System.out.print(blockedInQueue.get(i) + ", ");
+		}
+		System.out.print("DefaultOut:");
+		for (int i = 0; i < defaultOutQueue.size(); i++) {
+			System.out.print(defaultOutQueue.get(i) + ", ");
+		}
+		System.out.println("");
 	}
 
 	/**
