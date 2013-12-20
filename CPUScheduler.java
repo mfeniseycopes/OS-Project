@@ -68,7 +68,7 @@ public class CPUScheduler {
 	 */
 	public void ready (int jobID) {
 		// If the job is not blocked
-		if(!JobTable.isBlocked(jobID) && !JobTable.isReady(jobID)) {
+		if(!JobTable.isBlocked(jobID) && !JobTable.isReady(jobID) && !JobTable.isTerminated(jobID)) {
 			// Then add to appropriate ready queue
 			queue.add(jobID);
 			JobTable.setReady(jobID);

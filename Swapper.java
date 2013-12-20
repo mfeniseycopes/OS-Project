@@ -72,7 +72,6 @@ public class Swapper {
 			System.out.println("--Added Job " + jobID + " to swap queue");
 			JobTable.setDirection(jobID, 0);
 			swapQueue.add(jobID);
-			swap();
 		}
 	} 
 	/**
@@ -85,7 +84,6 @@ public class Swapper {
 			System.out.println("--Added Job " + jobID + " to swap queue");
 			JobTable.setDirection(jobID, 1);
 			swapQueue.add(jobID);
-			swap();
 		}
 	}
 
@@ -111,8 +109,6 @@ public class Swapper {
 			System.out.println("--Drum-to-Memory done for job " + jobID);
 			JobTable.inMemory(jobID);
 		}
-
-		swap();
 		return jobID;
 	}
 

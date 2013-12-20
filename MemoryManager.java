@@ -320,40 +320,6 @@ public class MemoryManager {
 		}
 	}
 
-
-		// 	// Send another job
-		// 	System.out.print("-MemoryManager attempts to add another job to memory");
-		// 	// If queue not empty
-		// 	if (!memQueue.isEmpty()) {
-		// 		// See if we can find free space
-		// 		int swapJobID = -1;
-		// 		swapJobID = findFreeSpace();
-				
-		// 		// If freespace is found
-		// 		if (swapJobID != -1) {
-		// 			// Update address in jobTable
-		// 			System.out.println("--" + swapJobID + " added and sent to swapper");
-		// 			memQueue.remove((Integer)swapJobID);
-		// 			// Returns the jobID of job to be swapped in
-		// 			return swapJobID;
-		// 		}
-		// 		else {
-		// 			System.out.println("--No Space found");
-		// 			return -1;
-		// 		}
-		// 	}
-		// 	else {
-		// 		System.out.println("--No jobs in queue");
-		// 		return -1;
-		// 	}
-		// }
-		// else {
-		// 	return -1;
-		// }
-	
-
-
-
 	// Returns positive if there are not enough running jobs in memory
 	public boolean smartSwap () {
 		int blockedCount = 0;
@@ -362,7 +328,7 @@ public class MemoryManager {
 				blockedCount++;
 			}
 		}
-		if (jobsInMemory.size() - blockedCount < 3 && jobsInMemory.size() >= 4) {
+		if (blockedCount > 0) {
 			return true;
 		}
 		else {

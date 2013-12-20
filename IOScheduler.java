@@ -1,5 +1,4 @@
-import java.util.Queue;
-import java.util.ArrayDeque;
+import java.util.LinkedList;
 
 public class IOScheduler {
 	
@@ -7,27 +6,63 @@ public class IOScheduler {
 	/**
 	 * VARIABLES***************************************************************
 	 */
-	Queue<Integer> ioQueue;
-	Queue<Integer> priQueue;
+	LinkedList<Integer> defaultQueue;
+	LinkedList<Integer> blockedInQueue;
+	LinkedList<Integer> blockedOutQueue;
+	LinkedList<Integer> terminatedQueue;
 	int inIO;
 
 	/**
 	 * CONSTRUCTOR*************************************************************
 	 */
 	IOScheduler () {
-		ioQueue = new ArrayDeque<Integer>();
-		priQueue = new ArrayDeque<Integer>();
+		defaultQueue = new LinkedList<Integer>();
+		blockedInQueue = new LinkedList<Integer>();
+		blockedOutQueue = new LinkedList<Integer>();
+		terminatedQueue = new LinkedList<Integer>();
 		inIO = -1;
 	}
 
 	/**
 	 * PRIVATE METHODS*********************************************************
 	 */
-	
+	void ioCheck () {
+		System.out.println("--BlockedIn Queue has " + blockedInQueue.size());
+		System.out.println("--Terminated Queue has " + terminatedQueue.size());
+		System.out.println("--Default Queue has " + defaultQueue.size());
+		if (inIO == -1) {
+			if (!terminatedQueue.isEmpty()) {
+				inIO = terminatedQueue.remove();
+				//System.out.println("--Terminated Queue has " + terminatedQueue.size());
+			}
+			else if (!blockedInQueue.isEmpty()) {
+				inIO = blockedInQueue.remove();
+				//System.out.println("--BlockedIn Queue has " + blockedInQueue.size());
+			}
+			else if (!defaultQueue.isEmpty()) {
+				inIO = defaultQueue.remove();
+				
+			}
+			if (inIO != -1) {
+				System.out.println("--Job is sent to do I/O");
+				JobTable.setDoingIO(inIO);
+				sos.siodisk(inIO);
+			}
+		}
+	}
 
 	/**
 	 * PUBLIC METHODS**********************************************************
 	 */
+	
+	public int ioMemCheck() {
+		if (!blockedOutQueue.isEmpty() && blockedInQueue.isEmpty()) {
+			return blockedOutQueue.peek();
+		}
+		else {
+			return -1;
+		}
+	}
 	
 	/**
 	 * Prints status of I/O
@@ -36,12 +71,12 @@ public class IOScheduler {
 		System.out.println("-I/O Report:");
 		System.out.println("--In I/O: " + inIO);
 		System.out.print("--Next In Queue: ");
-		if (!ioQueue.isEmpty()) {
-			System.out.println(ioQueue.peek());
-		}
-		else {
-			System.out.println("Nothing");
-		}
+		// if (!ioQueue.isEmpty()) {
+		// 	System.out.println(ioQueue.peek());
+		// }
+		// else {
+		// 	System.out.println("Nothing");
+		// }
 	}
 
 	/**
@@ -69,17 +104,9 @@ public class IOScheduler {
 	public void add (int jobID) {
 		System.out.println("-IOScheduler accepts new job");
 		JobTable.incrementIO(jobID);
-		//ioQueue.add(jobID);
-		if (inIO == -1 && ioQueue.isEmpty()) {
-			System.out.println("--Job is sent to do I/O");
-			inIO = jobID;
-			JobTable.setDoingIO(inIO);
-			sos.siodisk(inIO);
-		}
-		else {
-			System.out.println("--Job is added to I/O Queue");
-			ioQueue.add(jobID);
-		}
+
+		defaultQueue.add(jobID);
+		ioCheck();
 	}
 
 	/**
@@ -89,89 +116,71 @@ public class IOScheduler {
 	 * @return jobID of process that just finished I/O and jobID of 
 	 *               process that needs to be brought into memory
 	 */
-	public int[] ioDone () {
-
+	public int ioDone () {
 		// If job which finished I/O is valid
-		if (inIO != -1) {
-			// Decrement & get it's I/O pending
-			JobTable.decrementIO(inIO);
-			JobTable.unsetDoingIO(inIO);
-			// If the job is ready to be unblocked
-			if (JobTable.getIO(inIO) == 0 && JobTable.isBlocked(inIO)) {
-				JobTable.unsetBlocked(inIO);
-			}
-		}
-
 		int jobID = inIO;
-		int memJob = -1;
-		boolean jobAcquired = false;
-
-		// Checks priority queue, handles the olded blocked job 
-		// which is waiting to complete I/O
-		if (!priQueue.isEmpty()) {
-			// If I/O is still valid (job not terminated)
-			if (JobTable.getAddress(priQueue.peek()) != -1) {
-				inIO = priQueue.remove();
-				JobTable.setDoingIO(inIO);
-				sos.siodisk(inIO);
-				jobAcquired = true;
+		inIO = -1;
+		if (jobID != -1) {
+			// Decrement & get it's I/O pending
+			JobTable.decrementIO(jobID);
+			JobTable.unsetDoingIO(jobID);
+			// If the job is ready to be unblocked
+			if (JobTable.getIO(jobID) == 0 && JobTable.isBlocked(jobID)) {
+				JobTable.unsetBlocked(jobID);
 			}
 		}
-		if (jobAcquired == false) {
-			// Checks regular queue
-			if (ioQueue.isEmpty()){
-				inIO = -1;
-			}
-			else {
-				// If the next I/O requester is in memory, start it
-				if (JobTable.getAddress(ioQueue.peek()) != -1) {
-					inIO = ioQueue.remove();
-					JobTable.setDoingIO(inIO);
-					sos.siodisk(inIO);
+
+		ioCheck(); 
+		return jobID;
+	}
+
+	// Moves a job's I/O to the correct queue
+	public void moveIO (int jobID) {
+		int ioCount = JobTable.getIO(jobID);
+		if (ioCount > 0) {
+			// Query the jobTable to determine which list I/O should move to
+			// Move to terminated 
+			if (JobTable.isTerminated(jobID)) {
+				// Remove from default, blockedIn
+				System.out.println("--Moving to terminatedQueue");
+				while (defaultQueue.contains((Integer)jobID)) {
+					defaultQueue.remove((Integer)jobID);
+					terminatedQueue.add(jobID);
 				}
-				// If the next I/O is not in memory,
-				// push to priority queue, request for job to move into memory
+				while (blockedInQueue.contains((Integer)jobID)) {
+					blockedInQueue.remove((Integer)jobID);
+					terminatedQueue.add(jobID);
+				}
+			}
+			// Move to blocked
+			else if (JobTable.isBlocked(jobID)) {
+				// Move to blockedOut
+				if (JobTable.getAddress(jobID) == -1) {
+					System.out.println("--Moving to blockedOutQueue");
+					// Remove from blockedIn
+					while (blockedInQueue.contains((Integer)jobID)) {
+						blockedInQueue.remove((Integer)jobID);
+						blockedOutQueue.add(jobID);
+					}
+					while (defaultQueue.contains((Integer)jobID)) {
+						defaultQueue.remove((Integer)jobID);
+						blockedOutQueue.add(jobID);
+					}
+				}
+				// Move to blockedIn
 				else {
-					memJob = ioQueue.remove();
-					// Only moves to priority queue if its empty or the same job exists there
-					if (priQueue.isEmpty() || priQueue.peek() == memJob) {
-						priQueue.add(memJob);
+					System.out.println("--Moving to blockedInQueue");
+					// Remove from default
+					while (defaultQueue.contains((Integer)jobID)) {
+						defaultQueue.remove((Integer)jobID);
+						blockedInQueue.add(jobID);
 					}
-					else {
-						ioQueue.add(memJob);
-					}
-					inIO = -1;
 				}
 			}
 		}
-		// Returns the job which finished and the next job to try in memory
-		int[] returnFields = {jobID, memJob};
-		return returnFields;
 	}
 
-	/**
-	 * Clears given jobs pending I/O and invalidates any current I/O
-	 * @param jobID job to query
-	 */
-	public void clear (int jobID) {
-		System.out.println("-IOScheduler clearing job's I/O");
-		// Clears pendingIO count in jobTable
-		JobTable.clearIO (jobID);
-		// Removes I/O tasks in queue for given job
-		int count = 0;
-		for (int i = 0; i < ioQueue.size(); i++) {
-			if (ioQueue.contains((Integer) jobID)) {
-				ioQueue.remove((Integer) jobID);
-				i--;
-				count++;
-			}
-			System.out.println("--Removed " + count + " from queue");
-		}
-		// if (inIO == jobID) {
-		// 	inIO = -1;
-		// 	System.out.println("--Current I/O marked as invalid");
-		// }
-	}
+	
 
 	
 
