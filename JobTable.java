@@ -252,6 +252,13 @@ public class JobTable {
 		}
 	}
 
+	public static void setSwapped (int jobID) {
+		table.get(jobID - 1).swapped = true;
+	}
+	public static boolean getSwapped (int jobID) {
+		return table.get(jobID - 1).swapped;
+	}
+
 	public static int getPriorityTime (int jobID) {
 		return table.get(jobID -1).priorityTime;
 	}

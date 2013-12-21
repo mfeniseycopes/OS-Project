@@ -18,6 +18,7 @@ public class Job {
 	boolean latched; // doing IO
 	boolean ready;
 	boolean blocked;
+	boolean swapped;
 
 	/**
 	 * CONSTRUCTOR
@@ -39,6 +40,7 @@ public class Job {
 		latched = false;
 		ready = false;
 		blocked = false;
+		swapped = false;
 		
 	}
 }

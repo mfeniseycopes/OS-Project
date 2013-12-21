@@ -19,9 +19,6 @@ public class CPUScheduler {
 	CPUScheduler () {
 		
 		queue 	= new PriorityQueue();
-
-
-		// ADDED
 		runningJob = -1;
 		slice 	= TIMESLICE;
 	}
@@ -43,67 +40,6 @@ public class CPUScheduler {
 	 */
 	
 	/**
-	 * Prints details of CPU Queues
-	 */
-	public void print () {
-		System.out.println("-CPU Report");
-		System.out.println("--In CPU  : " + runningJob);
-		System.out.println("");
-		queue.print();
-	}
-
-	public void update() {
-		int timeElapsed = os.currentTime - os.lastTime;
-		// Increments interrupted job's time time & current slice
-		if (runningJob != -1) {
-			JobTable.incrementTime(runningJob, timeElapsed);
-			slice = slice - timeElapsed;
-		}
-	}
-
-	/**
-	 * Adds job to appropriate ready queue (will remove from blocked if not
-	 * a new job)
-	 * @param jobID unique identifier for jobs
-	 */
-	public void ready (int jobID) {
-		// If the job is not blocked
-		if(!JobTable.isBlocked(jobID) && !JobTable.isReady(jobID) && !JobTable.isTerminated(jobID)) {
-			// Then add to appropriate ready queue
-			queue.add(jobID);
-			JobTable.setReady(jobID);
-			System.out.println("-CPUScheduler readies job " + jobID + " with priority " + JobTable.getPriority(jobID));
-		}
-		print();
-	}
-
-	/**
-	 * Terminates currently running job
-	 * @return jobID of terminated job
-	 */
-	public int terminate () {								
-		
-		int killedJob = runningJob;
-		runningJob = -1;
-		// Sets to terminated in jobTable
-		JobTable.terminate(killedJob);
-		JobTable.unsetReady(killedJob);
-
-		System.out.println("-CPUScheduler terminates job " + killedJob);
-
-		return killedJob;
-	}
-
-	/**
-	 * Gets the currently running (head of queue) jobID and returns
-	 * If the queue is empty returns -1
-	 * @return int jobID or -1 if no job running
-	 */
-	public int current () {
-		return runningJob;
-	}
-
-	/**
 	 * Blocks currently running job by removing from queue and
 	 * adding to the blocked list
 	 */
@@ -112,6 +48,15 @@ public class CPUScheduler {
 		JobTable.setBlocked(runningJob);
 		JobTable.unsetReady(runningJob);
 		runningJob = -1;
+	}
+	
+	/**
+	 * Gets the currently running (head of queue) jobID and returns
+	 * If the queue is empty returns -1
+	 * @return int jobID or -1 if no job running
+	 */
+	public int current () {
+		return runningJob;
 	}
 
 	/**
@@ -145,6 +90,8 @@ public class CPUScheduler {
 			// potential swapout
 			else if ((os.currentTime - JobTable.getPriorityTime(runningJob)) >= RUN_WAIT) {
 				System.out.println("-CPUScheduler reduces priority of Job " + runningJob);
+				int runningInMem = 0;
+	
 				if (!JobTable.doingIO(runningJob) && queue.getNext() != -1) {
 					returnVars[1] = runningJob;
 					JobTable.lowerPriority(runningJob);
@@ -184,6 +131,16 @@ public class CPUScheduler {
 		
 		return returnVars;
 	}
+	
+	/**
+	 * Prints details of CPU Queues
+	 */
+	public void print () {
+		System.out.println("-CPU Report");
+		System.out.println("--In CPU  : " + runningJob);
+		System.out.println("");
+		queue.print();
+	}
 
 	/**
 	 * Provides the size of the ready queue
@@ -192,4 +149,49 @@ public class CPUScheduler {
 	public int queueSize() {
 		return queue.size();
 	}
+
+	/**
+	 * Adds job to appropriate ready queue (will remove from blocked if not
+	 * a new job)
+	 * @param jobID unique identifier for jobs
+	 */
+	public void ready (int jobID) {
+		// If the job is not blocked
+		if(!JobTable.isBlocked(jobID) && !JobTable.isReady(jobID) && !JobTable.isTerminated(jobID)) {
+			// Then add to appropriate ready queue
+			queue.add(jobID);
+			JobTable.setReady(jobID);
+			System.out.println("-CPUScheduler readies job " + jobID + " with priority " + JobTable.getPriority(jobID));
+		}
+		print();
+	}
+
+	/**
+	 * Terminates currently running job
+	 * @return jobID of terminated job
+	 */
+	public int terminate () {								
+		
+		int killedJob = runningJob;
+		runningJob = -1;
+		// Sets to terminated in jobTable
+		JobTable.terminate(killedJob);
+		JobTable.unsetReady(killedJob);
+
+		System.out.println("-CPUScheduler terminates job " + killedJob);
+
+		return killedJob;
+	}
+
+	/**
+	 * Updates current running jobs time
+	 */
+	public void update() {
+		int timeElapsed = os.currentTime - os.lastTime;
+		// Increments interrupted job's time time & current slice
+		if (runningJob != -1) {
+			JobTable.incrementTime(runningJob, timeElapsed);
+			slice = slice - timeElapsed;
+		}
+	}	
  }

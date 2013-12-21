@@ -39,7 +39,6 @@ public class os {
 		 */
 		public void report (int[] a, int[] p) {
 
-			
 			System.out.println("\n*****REPORTS******");
 			// Setting the sos's a, p values
 			// If there is no job, set to idle
@@ -89,6 +88,11 @@ public class os {
 		div();
 	}
 
+	/**
+	 * Called at end of each interrupt to check if new swapping should take place
+	 * @param a from sos
+	 * @param p from sos
+	 */
 	public static void rescan (int[] a, int[] p) {
 		System.out.println("****RESCAN****");
 
@@ -96,13 +100,24 @@ public class os {
 		// returnVars[0] : Job exceeding maxTime (needs memory freed)
 		// returnVars[1] : Job exceeding priority time
 		int[] returnVars = cpuScheduler.next(a, p);
-
+		
+		// If job exceeds max runtime, add to terminated llist
 		memoryManager.newTerminated(returnVars[0]);
+		
+		// Checks if a blocked job is ready to be swappedout
 		swapper.swapOut(ioScheduler.readyToLeave());
-		swapper.swapOut(returnVars[1]);
-		swapper.swapIn(memoryManager.find());
-		swapper.swap();
 
+		// Checks if a blocked job is ready to be swapped in
+		swapper.swapIn(memoryManager.add(ioScheduler.readyToReturn()));
+
+		// Swaps out job that has exceeded max memory time
+		swapper.swapOut(returnVars[1]);
+
+		// Adds new job to swap queue
+		swapper.swapIn(memoryManager.find());
+
+		// Initiates any swapping
+		swapper.swap();
 	}
 	/**
 	 * Accepts new job into system
@@ -149,8 +164,6 @@ public class os {
 		// the jobID of the job which need to be brought in
 		int jobID = ioScheduler.ioDone();
 
-		int jobNeedsMemory = ioScheduler.ioMemCheck();
-
 		// Will ready job if necessary
 		cpuScheduler.ready(jobID);
 
@@ -158,7 +171,7 @@ public class os {
 		ioScheduler.moveIO(jobID);
 		// If there is a job that needs memory
 		// Place it in the memory queue
-		swapper.swapIn(memoryManager.add(jobNeedsMemory));
+		//swapper.swapIn(memoryManager.add(jobNeedsMemory));
 
 		rescan(a, p);
 		// Report
@@ -195,6 +208,7 @@ public class os {
 		else if (direction == 1) {
 			memoryManager.free(jobID);
 		}
+		// Moves the jobs I/O if status changes
 		ioScheduler.moveIO(jobID);
 
 		rescan(a, p);

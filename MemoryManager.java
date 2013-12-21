@@ -22,7 +22,10 @@ public class MemoryManager {
 	final int MEMSIZE = 100;
 	LinkedList<FreeSpace> freeSpaceTable;
 	LinkedList<Integer> jobsInMemory;
-	LinkedList<Integer> memQueue;
+	// LinkedList<Integer> memQueue;
+	LinkedList<Integer> unswappedQueue;
+	LinkedList<Integer> swappedQueue;
+	LinkedList<Integer> blockedQueue;
 	LinkedList<Integer> terminated;
 
 	/**
@@ -36,13 +39,59 @@ public class MemoryManager {
 		// Keeps track of jobs in memory and their base addresses
 		jobsInMemory = new LinkedList<Integer>();
 		// MemoryQueue initially empty
-		memQueue = new LinkedList<Integer>();
+		//memQueue = new LinkedList<Integer>();
+		unswappedQueue = new LinkedList<Integer>();
+		swappedQueue = new LinkedList<Integer>();
+		blockedQueue = new LinkedList<Integer>();
 		terminated = new LinkedList<Integer>();
 	}
 
 	/**
 	 * PRIVATE METHODS*********************************************************
 	 */
+	
+	/**
+	 * Adds new job to the correct queue
+	 * @param jobID [description]
+	 */
+	void addToQueues (int jobID) {
+		if (JobTable.isBlocked(jobID)) {
+			blockedQueue.add(jobID);
+		}
+		else if (JobTable.getSwapped(jobID)) {
+			swappedQueue.add(jobID);
+		}
+		else {
+			unswappedQueue.add(jobID);
+		}
+	}
+
+	/**
+	 * Finds a job from queues to add to memory
+	 * @return jobID of job to add
+	 */
+	int find () {
+		// Send another job
+		System.out.print("-MemoryManager attempts to add another job to memory");
+		// If queue not empty
+		
+		// See if we can find free space
+		int swapJobID = -1;
+		swapJobID = findFreeSpace();
+		
+		// If freespace is found
+		if (swapJobID != -1) {
+			// Update address in jobTable
+			System.out.println("--" + swapJobID + " added and sent to swapper");
+			// memQueue.remove((Integer)swapJobID);
+			// Returns the jobID of job to be swapped in
+			return swapJobID;
+		}
+		else {
+			System.out.println("--No Space found");
+			return -1;
+		}
+	}
 
 	/**
 	 * Checks for availability in freeSpaceTable
@@ -53,15 +102,32 @@ public class MemoryManager {
 	 */
 	int findFreeSpace () {
 		// set initial address/job to invalid
-		int address = -1;
 		int jobID = -1;
+		if (!unswappedQueue.isEmpty()) {
+			jobID = iterateFreeSpace(unswappedQueue);
+		}
+		else if (!swappedQueue.isEmpty()) {
+			jobID = iterateFreeSpace(swappedQueue);
+		}
+		else if (!blockedQueue.isEmpty()) {
+			jobID = iterateFreeSpace(blockedQueue);
+		}
+		return jobID;
+	}
 
-		// Iterates through all jobs in memory queue
-		for (int j = 0; j < memQueue.size(); j++) {
-			System.out.println("Memqueue size = " + memQueue.size());
+	/**
+	 * Given a list of freespaces, checks if there is freespace for any pending jobs
+	 * @param  queue LinkedList of freespace
+	 * @return       the jobID of job which fits
+	 */
+	int iterateFreeSpace (LinkedList<Integer> queue) {
+		int jobID = -1;
+		int address = -1;
+		for (int j = 0; j < queue.size(); j++) {
+			//System.out.println("--Queue size = " + memQueue.size());
 			
 			// Gets next element of queue
-			int jobSize = JobTable.getSize(memQueue.get(j));
+			int jobSize = JobTable.getSize(queue.get(j));
 			System.out.println("--Checking for " + jobSize + " free space...");
 
 			// Checks freeSpaceTable for first available memory location
@@ -87,9 +153,9 @@ public class MemoryManager {
 					else {
 						System.out.println("----Used entire space");
 					}
-					jobID = memQueue.get(j);
+					jobID = queue.get(j);
 					JobTable.setAddress(jobID, address);
-					memQueue.remove((Integer)jobID);
+					queue.remove((Integer)jobID);
 					break;
 				}
 				// If the space is too small
@@ -105,63 +171,10 @@ public class MemoryManager {
 		return jobID;
 	}
 
-	int find () {
-		// Send another job
-		System.out.print("-MemoryManager attempts to add another job to memory");
-		// If queue not empty
-		if (!memQueue.isEmpty()) {
-			// See if we can find free space
-			int swapJobID = -1;
-			swapJobID = findFreeSpace();
-			
-			// If freespace is found
-			if (swapJobID != -1) {
-				// Update address in jobTable
-				System.out.println("--" + swapJobID + " added and sent to swapper");
-				memQueue.remove((Integer)swapJobID);
-				// Returns the jobID of job to be swapped in
-				return swapJobID;
-			}
-			else {
-				System.out.println("--No Space found");
-				return -1;
-			}
-		}
-		else {
-			System.out.println("--No jobs in queue");
-			return -1;
-		}
-	}
-
-
-
 	/**
 	 * PUBLIC METHODS**********************************************************
 	 */
 	
-	/**
-	 * Prints the status of freeSpace and the jobs in memory
-	 */
-	public void print() {
-
-		System.out.println("-Memory Report");
-		FreeSpace iterator;
-		for (int i = 0; i < freeSpaceTable.size(); i++) {
-			iterator = freeSpaceTable.get(i);
-			System.out.println("--FreeSpace " + i + " : Address=" + iterator.start + " Size=" + iterator.size);
-		}
-		System.out.print("--Jobs waiting for memory: ");
-		for (int i = 0; i < memQueue.size(); i++) {
-			System.out.print(memQueue.get(i) + ", ");
-		}
-		System.out.println("");
-		System.out.print("--Jobs in memory: ");
-		for (int i = 0; i < jobsInMemory.size(); i++) {
-			System.out.print(jobsInMemory.get(i) + ", ");
-		}
-		System.out.println("");
-	}
-
 	/**
 	 * adds new job to memory from id number
 	 * checks to see if space is available
@@ -173,19 +186,30 @@ public class MemoryManager {
 	 */
 	public int add (int jobID) {
 		// If the job is not in memory or in the queue already & is valid
-		if (jobID != -1 && !memQueue.contains((Integer)jobID) && !jobsInMemory.contains((Integer)jobID)) {
+		if (jobID != -1 && !jobsInMemory.contains((Integer)jobID)) {
 			// Sets swap direction to-Memory
 			JobTable.setDirection(jobID, 0);
 			
 			System.out.println ("-MemoryManager adds job " + jobID + " to queue");
-			memQueue.add(jobID);
+			addToQueues(jobID);
 
-			// With new element in memQueue, attempts to find space
+			// With new element in memQueue, attemp  ts to find space
 			jobID = findFreeSpace();
 			return jobID;
 		}
 		else {
 			return -1;
+		}
+	}
+
+	/**
+	 * Adds job to jobsInMemory
+	 * @param jobID [description]
+	 */
+	public void addToMemory (int jobID) {
+		if (jobID != -1) {
+			//memQueue.remove((Integer)jobID);
+			jobsInMemory.add(jobID);
 		}
 	}
 
@@ -197,7 +221,7 @@ public class MemoryManager {
 	 */
 	public void free (int jobID) {
 		if (jobID != -1 && !JobTable.doingIO(jobID)) {
-			System.out.println("-MemoryManager begins to free job " + jobID);
+			System.out.println("-MemoryManager begins to free job " + jobID + " with " + JobTable.getTimeLeft(jobID) + " left");
 
 			// Variables needed in iteration
 			// Iterates across freespaces in mem
@@ -211,9 +235,10 @@ public class MemoryManager {
 
 			// If the just freed job still has CPU time remaining,
 			// then add it back into the memqueue
-			if (JobTable.getTimeLeft(jobID) > 0 && !JobTable.isTerminated(jobID)) {
+			if (JobTable.getTimeLeft(jobID) > 0 && !JobTable.isTerminated(jobID) && !JobTable.isBlocked(jobID)) {
 				JobTable.setDirection(jobID, 0);
-				memQueue.add(jobID);
+				System.out.println("ADDEDTOQUEUS");
+				addToQueues(jobID);
 			}
 
 			// Free the space
@@ -320,7 +345,65 @@ public class MemoryManager {
 		}
 	}
 
-	// Returns positive if there are not enough running jobs in memory
+	/**
+	 * Frees memory of terminated jobs if all I/O done
+	 */
+	public void freeTerminated() {
+		for (int i = 0; i < terminated.size(); i++) {
+			if (JobTable.getIO(terminated.get(i)) == 0) {
+				free(terminated.remove(i));
+			}
+		}
+	}
+
+	/**
+	 * Adds to list of jobs terminated with memory needing to be freed
+	 * @param jobID [description]
+	 */
+	public void newTerminated(int jobID) {
+		if (jobID != -1) {
+			terminated.add(jobID);
+		}
+	}
+	
+	/**
+	 * Prints the status of freeSpace and the jobs in memory
+	 */
+	public void print() {
+
+		System.out.println("-Memory Report");
+		FreeSpace iterator;
+		for (int i = 0; i < freeSpaceTable.size(); i++) {
+			iterator = freeSpaceTable.get(i);
+			System.out.println("--FreeSpace " + i + " : Address=" + iterator.start + " Size=" + iterator.size);
+		}
+		System.out.println("--Jobs waiting for memory: ");
+		System.out.print("---Unswapped : ");
+		for (int i = 0; i < unswappedQueue.size(); i++) {
+			System.out.print(unswappedQueue.get(i) + ", ");
+		}
+		System.out.println("");
+		System.out.print("---Swapped : ");
+		for (int i = 0; i < swappedQueue.size(); i++) {
+			System.out.print(swappedQueue.get(i) + ", ");
+		}
+		System.out.println("");
+		System.out.print("---Blocked : ");
+		for (int i = 0; i < blockedQueue.size(); i++) {
+			System.out.print(blockedQueue.get(i) + ", ");
+		}
+		System.out.println("");	
+		System.out.print("--Jobs in memory: ");
+		for (int i = 0; i < jobsInMemory.size(); i++) {
+			System.out.print(jobsInMemory.get(i) + ", ");
+		}
+		System.out.println("");
+	}
+
+	/**
+	 * Returns positive if there are not enough running jobs in memory
+	 * @return boolean whether it is wise to swap a job out
+	 */
 	public boolean smartSwap () {
 		int blockedCount = 0;
 		for (int i = 0; i < jobsInMemory.size(); i++) {
@@ -333,30 +416,6 @@ public class MemoryManager {
 		}
 		else {
 			return false;
-		}
-	}
-
-	// Adds to list of jobs terminated with memory needing to be freed
-	public void newTerminated(int jobID) {
-		if (jobID != -1) {
-			terminated.add(jobID);
-		}
-	}
-
-	// Frees memory of terminated jobs if all I/O done
-	public void freeTerminated() {
-		for (int i = 0; i < terminated.size(); i++) {
-			if (JobTable.getIO(terminated.get(i)) == 0) {
-				free(terminated.remove(i));
-			}
-		}
-	}
-
-	// Adds job to jobsInMemory
-	public void addToMemory (int jobID) {
-		if (jobID != -1) {
-			memQueue.remove((Integer)jobID);
-			jobsInMemory.add(jobID);
 		}
 	}
 }
