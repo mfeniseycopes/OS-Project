@@ -20,6 +20,18 @@ public class JobTable {
 		table.add(newJob);
 	}
 
+	public static void setSwapping (int jobID) {
+		table.get(jobID - 1).inDrum = true;
+	}
+
+	public static void stopSwapping (int jobID) {
+		table.get(jobID-1).inDrum = false;
+	}
+
+	public static boolean isSwapping (int jobID) {
+		return table.get(jobID-1).inDrum;
+	}
+
 	public static int getPriority (int jobID) {
 		return table.get(jobID - 1).priority;
 	}

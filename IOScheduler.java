@@ -123,12 +123,6 @@ public class IOScheduler {
 		System.out.println("-I/O Report:");
 		System.out.println("--In I/O: " + inIO);
 		System.out.print("--Next In Queue: ");
-		// if (!ioQueue.isEmpty()) {
-		// 	System.out.println(ioQueue.peek());
-		// }
-		// else {
-		// 	System.out.println("Nothing");
-		// }
 	}
 
 	/**
@@ -165,45 +159,47 @@ public class IOScheduler {
 	 * @param jobID the job to move
 	 */
 	public void moveIO (int jobID) {
-		int ioCount = JobTable.getIO(jobID);
-		if (ioCount > 0) {
-			System.out.println("-IO");
-			// Query the jobTable to determine which list I/O should move to
-			// Move to terminated 
-			if (JobTable.isTerminated(jobID)) {
-				// Remove from default, blockedIn
-				System.out.println("--Moving to terminatedQueue");
-				while (defaultQueue.contains((Integer)jobID)) {
-					defaultQueue.remove((Integer)jobID);
-					terminatedQueue.add(jobID);
-				}
-				while (blockedInQueue.contains((Integer)jobID)) {
-					blockedInQueue.remove((Integer)jobID);
-					terminatedQueue.add(jobID);
-				}
-			}
-			// Move to blocked
-			else if (JobTable.isBlocked(jobID)) {
-				// Move to blockedOut
-				if (JobTable.getAddress(jobID) == -1) {
-					System.out.println("--Moving to blockedOutQueue");
-					// Remove from blockedIn
+		if (jobID != -1) {
+			int ioCount = JobTable.getIO(jobID);
+			if (ioCount > 0) {
+				System.out.println("-IO");
+				// Query the jobTable to determine which list I/O should move to
+				// Move to terminated 
+				if (JobTable.isTerminated(jobID)) {
+					// Remove from default, blockedIn
+					System.out.println("--Moving to terminatedQueue");
+					while (defaultQueue.contains((Integer)jobID)) {
+						defaultQueue.remove((Integer)jobID);
+						terminatedQueue.add(jobID);
+					}
 					while (blockedInQueue.contains((Integer)jobID)) {
 						blockedInQueue.remove((Integer)jobID);
-						blockedOutQueue.add(jobID);
-					}
-					while (defaultQueue.contains((Integer)jobID)) {
-						defaultQueue.remove((Integer)jobID);
-						blockedOutQueue.add(jobID);
+						terminatedQueue.add(jobID);
 					}
 				}
-				// Move to blockedIn
-				else {
-					System.out.println("--Moving to blockedInQueue");
-					// Remove from default
-					while (defaultQueue.contains((Integer)jobID)) {
-						defaultQueue.remove((Integer)jobID);
-						blockedInQueue.add(jobID);
+				// Move to blockedOut
+				else if (JobTable.isBlocked(jobID)) {
+					// Move to blockedOut
+					if (JobTable.getAddress(jobID) == -1 || JobTable.isSwapping(jobID)) {
+						System.out.println("--Moving to blockedOutQueue");
+						// Remove from blockedIn
+						while (blockedInQueue.contains((Integer)jobID)) {
+							blockedInQueue.remove((Integer)jobID);
+							blockedOutQueue.add(jobID);
+						}
+						while (defaultQueue.contains((Integer)jobID)) {
+							defaultQueue.remove((Integer)jobID);
+							blockedOutQueue.add(jobID);
+						}
+					}
+					// Move to blockedIn
+					else {
+						System.out.println("--Moving to blockedInQueue");
+						// Remove from default
+						while (defaultQueue.contains((Integer)jobID)) {
+							defaultQueue.remove((Integer)jobID);
+							blockedInQueue.add(jobID);
+						}
 					}
 				}
 			}

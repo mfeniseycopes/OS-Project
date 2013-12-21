@@ -117,7 +117,7 @@ public class os {
 		swapper.swapIn(memoryManager.find());
 
 		// Initiates any swapping
-		swapper.swap();
+		ioScheduler.moveIO(swapper.swap());
 	}
 	/**
 	 * Accepts new job into system

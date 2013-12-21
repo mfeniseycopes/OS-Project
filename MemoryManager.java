@@ -22,7 +22,6 @@ public class MemoryManager {
 	final int MEMSIZE = 100;
 	LinkedList<FreeSpace> freeSpaceTable;
 	LinkedList<Integer> jobsInMemory;
-	// LinkedList<Integer> memQueue;
 	LinkedList<Integer> unswappedQueue;
 	LinkedList<Integer> swappedQueue;
 	LinkedList<Integer> blockedQueue;
@@ -38,8 +37,6 @@ public class MemoryManager {
 		freeSpaceTable.add(empty);
 		// Keeps track of jobs in memory and their base addresses
 		jobsInMemory = new LinkedList<Integer>();
-		// MemoryQueue initially empty
-		//memQueue = new LinkedList<Integer>();
 		unswappedQueue = new LinkedList<Integer>();
 		swappedQueue = new LinkedList<Integer>();
 		blockedQueue = new LinkedList<Integer>();
@@ -55,6 +52,9 @@ public class MemoryManager {
 	 * @param jobID [description]
 	 */
 	void addToQueues (int jobID) {
+		blockedQueue.remove((Integer)jobID);
+		unswappedQueue.remove((Integer)jobID);
+		swappedQueue.remove((Integer)jobID);
 		if (JobTable.isBlocked(jobID)) {
 			blockedQueue.add(jobID);
 		}
@@ -71,26 +71,27 @@ public class MemoryManager {
 	 * @return jobID of job to add
 	 */
 	int find () {
+		int swapInJob = -1;
+		//int swapOutJob = -1;
 		// Send another job
 		System.out.print("-MemoryManager attempts to add another job to memory");
 		// If queue not empty
 		
 		// See if we can find free space
-		int swapJobID = -1;
-		swapJobID = findFreeSpace();
+		swapInJob = findFreeSpace();
 		
 		// If freespace is found
-		if (swapJobID != -1) {
+		if (swapInJob != -1) {
 			// Update address in jobTable
-			System.out.println("--" + swapJobID + " added and sent to swapper");
-			// memQueue.remove((Integer)swapJobID);
-			// Returns the jobID of job to be swapped in
-			return swapJobID;
+			System.out.println("--" + swapInJob + " added and sent to swapper");
 		}
 		else {
 			System.out.println("--No Space found");
-			return -1;
 		}
+
+		return swapInJob;
+		// Checks if any jobs need to be kicked
+		
 	}
 
 	/**
@@ -138,6 +139,11 @@ public class MemoryManager {
 
 				// If the space will hold new job
 				if (iterator.size >= jobSize) {
+					if (jobSize > 40) {
+						if (iterator.start + jobSize > 60 && iterator.start < 50) {
+							break;
+						}
+					}
 					address = iterator.start;
 					iterator.start = iterator.start + jobSize;
 					iterator.size = iterator.size - jobSize;
@@ -362,7 +368,12 @@ public class MemoryManager {
 	 */
 	public void newTerminated(int jobID) {
 		if (jobID != -1) {
-			terminated.add(jobID);
+			if (JobTable.getIO(jobID) > 0 || JobTable.doingIO(jobID)) {
+				terminated.add(jobID);
+			}
+			else {
+				free(jobID);
+			}
 		}
 	}
 	

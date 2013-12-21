@@ -80,7 +80,7 @@ public class Swapper {
 	/**
 	 * Handles the actual searching and swap calling
 	 */
-	public void swap () {
+	public int swap () {
 		System.out.println("-Swap Queues:");
 		System.out.println("--BlockedOut Queue has " + blockedOutQueue.size());
 		System.out.println("--BlockedIn Queue has " + blockedInQueue.size());
@@ -113,6 +113,10 @@ public class Swapper {
 				inDrum = defaultInQueue.remove();
 			}
 			if (inDrum != -1) {
+				if (JobTable.doingIO(inDrum)) {
+					add(inDrum);
+				}
+				JobTable.setSwapping(inDrum);
 				Job swapJob = JobTable.returnJob(inDrum);
 				sos.siodrum (swapJob.idNum, swapJob.size, swapJob.address, swapJob.direction);
 				String descriptor = "";
@@ -126,6 +130,7 @@ public class Swapper {
 					" with size " + swapJob.size + descriptor + swapJob.address);
 			}
 		}
+		return inDrum;
 	}
 
 	/**
@@ -162,7 +167,7 @@ public class Swapper {
 		System.out.println("-Swapper getting swap details");
 		int jobID = inDrum;
 		inDrum = -1;
-		JobTable.unsetDoingIO(jobID);
+		JobTable.stopSwapping(jobID);
 		JobTable.resetPriorityTime(jobID);
 		Job job = JobTable.returnJob(jobID);
 

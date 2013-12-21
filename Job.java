@@ -19,6 +19,7 @@ public class Job {
 	boolean ready;
 	boolean blocked;
 	boolean swapped;
+	boolean inDrum;
 
 	/**
 	 * CONSTRUCTOR
@@ -41,6 +42,7 @@ public class Job {
 		ready = false;
 		blocked = false;
 		swapped = false;
+		inDrum = false;
 		
 	}
 }

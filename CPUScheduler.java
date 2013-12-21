@@ -7,9 +7,9 @@ public class CPUScheduler {
 	/**
 	 * VARIABLES***************************************************************
 	 */
-	final static int TIMESLICE =100;
-	final int RUN_WAIT = 1000;
-	PriorityQueue queue;
+	final static int TIMESLICE =200;
+	final int RUN_WAIT = 2000;
+	LinkedList<Integer> queue;
 	int runningJob;
 	int slice;
 
@@ -18,7 +18,7 @@ public class CPUScheduler {
 	 */
 	CPUScheduler () {
 		
-		queue 	= new PriorityQueue();
+		queue 	= new LinkedList<Integer>();
 		runningJob = -1;
 		slice 	= TIMESLICE;
 	}
@@ -89,16 +89,15 @@ public class CPUScheduler {
 			// If it has, then need to lower its priority and return to memManager for 
 			// potential swapout
 			else if ((os.currentTime - JobTable.getPriorityTime(runningJob)) >= RUN_WAIT) {
-				System.out.println("-CPUScheduler reduces priority of Job " + runningJob);
-				int runningInMem = 0;
 	
-				if (!JobTable.doingIO(runningJob) && queue.getNext() != -1) {
+				if (!JobTable.doingIO(runningJob) && queue.size() > 2) {
 					returnVars[1] = runningJob;
-					JobTable.lowerPriority(runningJob);
+					//JobTable.lowerPriority(runningJob);
 					JobTable.unsetReady(runningJob);
 				}
 				else {
-					queue.lowerPriority(runningJob);
+					queue.add(runningJob);
+					//queue.lowerPriority(runningJob);
 				}
 				runningJob = -1;
 			}
@@ -109,8 +108,8 @@ public class CPUScheduler {
 			}
 		}
 		// If there is no running job yet
-		if (runningJob == -1) {
-			runningJob = queue.removeNext();
+		if (runningJob == -1 && !queue.isEmpty()) {
+			runningJob = queue.remove();
 			System.out.println("Next job = " + runningJob);
 			slice = getSlice(runningJob, TIMESLICE);
 		}
@@ -127,7 +126,7 @@ public class CPUScheduler {
 			p[4] = slice;
 		}
 
-		queue.print();
+		//queue.print();
 		
 		return returnVars;
 	}
@@ -139,7 +138,7 @@ public class CPUScheduler {
 		System.out.println("-CPU Report");
 		System.out.println("--In CPU  : " + runningJob);
 		System.out.println("");
-		queue.print();
+		//queue.print();
 	}
 
 	/**
@@ -161,7 +160,7 @@ public class CPUScheduler {
 			// Then add to appropriate ready queue
 			queue.add(jobID);
 			JobTable.setReady(jobID);
-			System.out.println("-CPUScheduler readies job " + jobID + " with priority " + JobTable.getPriority(jobID));
+			System.out.println("-CPUScheduler readies job " + jobID);
 		}
 		print();
 	}
