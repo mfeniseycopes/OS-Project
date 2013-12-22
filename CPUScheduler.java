@@ -8,7 +8,7 @@ public class CPUScheduler {
 	 * VARIABLES***************************************************************
 	 */
 	final static int TIMESLICE =200;
-	final int RUN_WAIT = 2000;
+	final int RUN_WAIT = 1000;
 	LinkedList<Integer> queue;
 	int runningJob;
 	int slice;
@@ -90,7 +90,7 @@ public class CPUScheduler {
 			// potential swapout
 			else if ((os.currentTime - JobTable.getPriorityTime(runningJob)) >= RUN_WAIT) {
 	
-				if (!JobTable.doingIO(runningJob) && queue.size() > 2) {
+				if (!JobTable.doingIO(runningJob) && queue.size() > 4) {
 					returnVars[1] = runningJob;
 					//JobTable.lowerPriority(runningJob);
 					JobTable.unsetReady(runningJob);

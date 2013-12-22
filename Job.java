@@ -19,6 +19,7 @@ public class Job {
 	boolean ready;
 	boolean blocked;
 	boolean swapped;
+	boolean inSwapQueue;
 	boolean inDrum;
 
 	/**
@@ -42,6 +43,7 @@ public class Job {
 		ready = false;
 		blocked = false;
 		swapped = false;
+		inSwapQueue = false;
 		inDrum = false;
 		
 	}

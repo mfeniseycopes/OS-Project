@@ -118,6 +118,8 @@ public class os {
 
 		// Initiates any swapping
 		ioScheduler.moveIO(swapper.swap());
+
+		ioScheduler.ioCheck();
 	}
 	/**
 	 * Accepts new job into system

@@ -52,17 +52,19 @@ public class MemoryManager {
 	 * @param jobID [description]
 	 */
 	void addToQueues (int jobID) {
-		blockedQueue.remove((Integer)jobID);
-		unswappedQueue.remove((Integer)jobID);
-		swappedQueue.remove((Integer)jobID);
-		if (JobTable.isBlocked(jobID)) {
-			blockedQueue.add(jobID);
-		}
-		else if (JobTable.getSwapped(jobID)) {
-			swappedQueue.add(jobID);
-		}
-		else {
-			unswappedQueue.add(jobID);
+		if (JobTable.getAddress(jobID) == -1) {
+			blockedQueue.remove((Integer)jobID);
+			unswappedQueue.remove((Integer)jobID);
+			swappedQueue.remove((Integer)jobID);
+			if (JobTable.isBlocked(jobID)) {
+				blockedQueue.add(jobID);
+			}
+			else if (JobTable.getSwapped(jobID)) {
+				swappedQueue.add(jobID);
+			}
+			else {
+				unswappedQueue.add(jobID);
+			}
 		}
 	}
 
@@ -79,6 +81,7 @@ public class MemoryManager {
 		
 		// See if we can find free space
 		swapInJob = findFreeSpace();
+
 		
 		// If freespace is found
 		if (swapInJob != -1) {
@@ -324,26 +327,33 @@ public class MemoryManager {
 			}
 			// If the space couldn't be appended, need to add into correct location
 			if (!append) {
-				System.out.println("--New freespace added");
+				System.out.println("--New freespace added : " + job.address + ", " + job.size);
 				newSpace = new FreeSpace(job.address, job.size);
 				for (int i = 0; i < freeSpaceTable.size(); i++) {
 					iterator = freeSpaceTable.get(i);
 					if (i == 0 && newSpace.start < iterator.start) {
+						System.out.println("---At "+ i);
 						freeSpaceTable.add(i, newSpace);
 						break;
 					}
 					if ( (i+1) < freeSpaceTable.size()) {
 						iterator2 = freeSpaceTable.get(i+1);
 						if (iterator.start < newSpace.start && newSpace.start < iterator2.start) {
+							System.out.println("---At "+ (i+1));
 							freeSpaceTable.add(i+1, newSpace);
 							break;	
 						}
 					}
 					if ( i == freeSpaceTable.size()-1) {
+						System.out.println("---At end");
 						freeSpaceTable.add(newSpace);
 						break;
 					}
+
 				}
+				if (freeSpaceTable.isEmpty()) {
+						freeSpaceTable.add(newSpace);						
+					}
 			}
 			// Removes freed job from memory & clears address in jobTable
 			jobsInMemory.remove((Integer) jobID);

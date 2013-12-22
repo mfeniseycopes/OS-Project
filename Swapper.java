@@ -87,20 +87,11 @@ public class Swapper {
 		System.out.println("--DefaultIn Queue has " + defaultInQueue.size());
 		System.out.println("--DefaultOut Queue has " + defaultOutQueue.size());
 		if (inDrum == -1) {
-			// if (!defaultInQueue.isEmpty()) {
-			// 	inDrum = defaultInQueue.remove();
-			// }
-			// else if (!blockedOutQueue.isEmpty()) {
+			if (!defaultInQueue.isEmpty()) {
+				inDrum = defaultInQueue.remove();
+			}
+			else if (!blockedOutQueue.isEmpty()) {
 
-			// 	inDrum = blockedOutQueue.remove();
-			// }
-			// else if (!blockedInQueue.isEmpty()) {
-			// 	inDrum = blockedInQueue.remove();
-			// }
-			// else if (!defaultOutQueue.isEmpty()) {
-			// 	inDrum = defaultOutQueue.remove();
-			// }
-			if (!blockedOutQueue.isEmpty()) {
 				inDrum = blockedOutQueue.remove();
 			}
 			else if (!blockedInQueue.isEmpty()) {
@@ -109,25 +100,37 @@ public class Swapper {
 			else if (!defaultOutQueue.isEmpty()) {
 				inDrum = defaultOutQueue.remove();
 			}
-			else if (!defaultInQueue.isEmpty()) {
-				inDrum = defaultInQueue.remove();
-			}
+			// if (!blockedOutQueue.isEmpty()) {
+			// 	inDrum = blockedOutQueue.remove();
+			// }
+			// else if (!blockedInQueue.isEmpty()) {
+			// 	inDrum = blockedInQueue.remove();
+			// }
+			// else if (!defaultOutQueue.isEmpty()) {
+			// 	inDrum = defaultOutQueue.remove();
+			// }
+			// else if (!defaultInQueue.isEmpty()) {
+			// 	inDrum = defaultInQueue.remove();
+			// }
 			if (inDrum != -1) {
 				if (JobTable.doingIO(inDrum)) {
 					add(inDrum);
+					inDrum = -1;
 				}
-				JobTable.setSwapping(inDrum);
-				Job swapJob = JobTable.returnJob(inDrum);
-				sos.siodrum (swapJob.idNum, swapJob.size, swapJob.address, swapJob.direction);
-				String descriptor = "";
-				if (swapJob.direction == 0) {
-					descriptor = " to ";
+				else {
+					JobTable.setSwapping(inDrum);
+					Job swapJob = JobTable.returnJob(inDrum);
+					sos.siodrum (swapJob.idNum, swapJob.size, swapJob.address, swapJob.direction);
+					String descriptor = "";
+					if (swapJob.direction == 0) {
+						descriptor = " to ";
+					}
+					else if (swapJob.direction == 1) {
+						descriptor = " from ";
+					}
+					System.out.println("--Begin swapping Job " + swapJob.idNum +
+						" with size " + swapJob.size + descriptor + swapJob.address);
 				}
-				else if (swapJob.direction == 1) {
-					descriptor = " from ";
-				}
-				System.out.println("--Begin swapping Job " + swapJob.idNum +
-					" with size " + swapJob.size + descriptor + swapJob.address);
 			}
 		}
 		return inDrum;

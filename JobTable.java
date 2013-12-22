@@ -20,6 +20,8 @@ public class JobTable {
 		table.add(newJob);
 	}
 
+	// public void 
+
 	public static void setSwapping (int jobID) {
 		table.get(jobID - 1).inDrum = true;
 	}
@@ -294,6 +296,7 @@ public class JobTable {
 			String t = "";
 			String b = "";
 			String r = "";
+			String io = ("(" + table.get(i).pendingIO + ")");
 			if (table.get(i).terminated) {
 				t = "T";
 			}
@@ -303,7 +306,7 @@ public class JobTable {
 			if (table.get(i).ready) {
 				r = "R";
 			}
-			System.out.print((table.get(i).idNum) + ":" + t + b + r + ", ");
+			System.out.print((table.get(i).idNum) + ":" + t + b + r + io + ", ");
 		}
 		System.out.println("");
 	}
