@@ -40,23 +40,19 @@ public class IOScheduler
 		if (inIO == -1) 
 		{
 			// Checks terminated first
-			if (!terminatedQueue.isEmpty()) 
-			{
+			if (!terminatedQueue.isEmpty()) {
 				inIO = terminatedQueue.remove();
 			}
 			// Then in-memory-blocked
-			else if (!blockedInQueue.isEmpty()) 
-			{
+			else if (!blockedInQueue.isEmpty()) {
 				inIO = blockedInQueue.remove();
 			}
 			// Then regular jobs
-			else if (!defaultQueue.isEmpty()) 
-			{
+			else if (!defaultQueue.isEmpty()) {
 				inIO = defaultQueue.remove();	
 			}
 			// If an I/O task was found, run it
-			if (inIO != -1) 
-			{
+			if (inIO != -1) {
 				// System.out.println("--Job is sent to do I/O");
 				JobTable.setDoingIO(inIO);
 				sos.siodisk(inIO);
@@ -88,13 +84,11 @@ public class IOScheduler
 	 */
 	public boolean doingIO (int jobID) 
 	{
-		if (jobID == inIO) 
-		{
+		if (jobID == inIO) {
 			// System.out.println("--Job " + jobID + " is doing I/O");
 			return true;
 		}
-		else 
-		{
+		else {
 			// System.out.println("--Job " + jobID + " is not doing I/O");
 			return false;
 		}
@@ -112,14 +106,12 @@ public class IOScheduler
 		// If job which finished I/O is valid
 		int jobID = inIO;
 		inIO = -1;
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			// Decrement & get it's I/O pending
 			JobTable.decrementIO(jobID);
 			JobTable.unsetDoingIO(jobID);
 			// If the job is ready to be unblocked
-			if (JobTable.getIO(jobID) == 0 && JobTable.isBlocked(jobID)) 
-			{
+			if (JobTable.getIO(jobID) == 0 && JobTable.isBlocked(jobID)) {
 				JobTable.unsetBlocked(jobID);
 			}
 		}
@@ -167,30 +159,25 @@ public class IOScheduler
 		int swapOutBlockedJob = -1;
 
 		// If blocked jobs are in memory
-		if (!blockedInQueue.isEmpty()) 
-		{
+		if (!blockedInQueue.isEmpty()) {
 			// Checks if last element in queue is already swapping,
 			// if not, then set to swap in 
-			if (blockedInQueue.getLast() != inIO) 
-			{
+			if (blockedInQueue.getLast() != inIO) {
 				swapOutBlockedJob = blockedInQueue.getLast();
 			}
 			// Checks if a blocked job has exceeded its in memory time,
 			// if it has, then set to swap out
 			else if (JobTable.getPriorityTime(blockedInQueue.getFirst()) 
-				> 1000) 
-			{
+				> 1000) {
 				swapOutBlockedJob = blockedInQueue.getFirst();
 			}
 			// Checks to if job selected hasn't already requested to 
 			// be swapped. If it has, then invalidate job to swap out.
 			// If it hasn't then add to reported to swap list
-			if (reportedToSwap.contains(swapOutBlockedJob)) 
-			{
+			if (reportedToSwap.contains(swapOutBlockedJob)) {
 				swapOutBlockedJob = -1;
 			}
-			else 
-			{
+			else {
 				reportedToSwap.add(swapOutBlockedJob);
 			}
 		}
@@ -205,15 +192,12 @@ public class IOScheduler
 	public int readyToReturn () 
 	{
 		int swapInBlockedJob = -1;
-		if (blockedInQueue.isEmpty() && !blockedOutQueue.isEmpty()) 
-		{
+		if (blockedInQueue.isEmpty() && !blockedOutQueue.isEmpty()) {
 			swapInBlockedJob = blockedOutQueue.getFirst();
-			if (reportedToSwap.contains(swapInBlockedJob)) 
-			{
+			if (reportedToSwap.contains(swapInBlockedJob)) {
 				swapInBlockedJob = -1;
 			}
-			else 
-			{
+			else {
 				reportedToSwap.add(swapInBlockedJob);
 			}
 		}
@@ -228,50 +212,40 @@ public class IOScheduler
 	 */
 	public void moveIO (int jobID) 
 	{
-		if (jobID != -1)
-		{
+		if (jobID != -1) {
 			int ioCount = JobTable.getIO(jobID);
-			if (ioCount > 0) 
-			{
-				if (reportedToSwap.contains(jobID)) 
-				{
+			if (ioCount > 0) {
+				if (reportedToSwap.contains(jobID)) {
 					reportedToSwap.remove((Integer)jobID);
 				}
 				// System.out.println("-IO");
 				// Query the jobTable to determine which list I/O should move to
 				// Move to terminated 
-				if (JobTable.isTerminated(jobID)) 
-				{
+				if (JobTable.isTerminated(jobID)) {
 					// Remove from default, blockedIn
 					// System.out.println("--Moving to terminatedQueue");
-					while (defaultQueue.contains((Integer)jobID)) 
-					{
+					while (defaultQueue.contains((Integer)jobID)) {
 						defaultQueue.remove((Integer)jobID);
 						terminatedQueue.add(jobID);
 					}
-					while (blockedInQueue.contains((Integer)jobID)) 
-					{
+					while (blockedInQueue.contains((Integer)jobID)) {
 						blockedInQueue.remove((Integer)jobID);
 						terminatedQueue.add(jobID);
 					}
 				}
 				// Move to blockedOut
-				else if (JobTable.isBlocked(jobID)) 
-				{
+				else if (JobTable.isBlocked(jobID)) {
 					// Move to blockedOut
 					if (JobTable.getAddress(jobID) == -1 ||  
 						(JobTable.getAddress(jobID) != -1 && 
-							JobTable.isSwapping(jobID))) 
-					{
+							JobTable.isSwapping(jobID))) {
 						// System.out.println("--Moving to blockedOutQueue");
 						// Remove from blockedIn
-						while (blockedInQueue.contains((Integer)jobID)) 
-						{
+						while (blockedInQueue.contains((Integer)jobID)) {
 							blockedInQueue.remove((Integer)jobID);
 							blockedOutQueue.add(jobID);
 						}
-						while (defaultQueue.contains((Integer)jobID)) 
-						{
+						while (defaultQueue.contains((Integer)jobID)) {
 							defaultQueue.remove((Integer)jobID);
 							blockedOutQueue.add(jobID);
 						}
@@ -279,17 +253,14 @@ public class IOScheduler
 					// Move to blockedIn
 					else if (JobTable.getAddress(jobID) != -1 ||  
 						(JobTable.getAddress(jobID) == -1 
-							&& JobTable.isSwapping(jobID)))
-					{
+							&& JobTable.isSwapping(jobID))) {
 						// System.out.println("--Moving to blockedInQueue");
 						// Remove from default
-						while (defaultQueue.contains((Integer)jobID)) 
-						{
+						while (defaultQueue.contains((Integer)jobID)) {
 							defaultQueue.remove((Integer)jobID);
 							blockedInQueue.add(jobID);
 						}
-						while (blockedOutQueue.contains((Integer)jobID)) 
-						{
+						while (blockedOutQueue.contains((Integer)jobID)) {
 							blockedOutQueue.remove((Integer)jobID);
 							blockedInQueue.add(jobID);
 						}

@@ -208,16 +208,14 @@ public class os
 		// Gets completed swap Direction
 		int direction = jobTable.getDirection(jobID);
 		// If swapped into memory, ready job
-		if (direction == 0) 
-		{
+		if (direction == 0) {
 			// Adds to memoryManager inMemory list
 			memoryManager.addToMemory(jobID);
 			// Adds to cpu ready list
 			cpuScheduler.ready(jobID);
 		}
 		// Otherwise, free the space
-		else if (direction == 1) 
-		{
+		else if (direction == 1) {
 			memoryManager.free(jobID);
 		}
 		// Moves the jobs I/O if status changes
@@ -264,8 +262,7 @@ public class os
 		cpuScheduler.update();
 
 		// The job is requesting termination
-		if (a[0] == 5) 
-		{
+		if (a[0] == 5) {
 			// System.out.println("Requesting termination");
 			int jobID = cpuScheduler.terminate();
 			jobTable.setDirection(jobID, -1);
@@ -274,40 +271,34 @@ public class os
 			ioScheduler.moveIO(jobID);
 		}
 		// The job is requesting another I/O operation
-		else if (a[0] == 6) 
-		{
+		else if (a[0] == 6) {
 			// System.out.println("Requesting another i/o operation");
 			int jobID = cpuScheduler.current();
 			ioScheduler.add(jobID);
 		}
 		// The job is requesting to be blocked until all pending
 		// I/O requests are completed
-		else if (a[0] == 7) 
-		{
+		else if (a[0] == 7) {
 			// System.out.println(
 			// 	"Block until all pending I/O requests are completed");
 			int jobID = cpuScheduler.current();
 			// If job is using I/O, block, but don't free
-			if (ioScheduler.doingIO(jobID)) 
-			{
+			if (ioScheduler.doingIO(jobID)) {
 				// System.out.println("-I/O: Job is doing I/O");
 				cpuScheduler.block();
 				ioScheduler.moveIO(jobID);
 			}
 			// If jobs are pending, block and free
-			else if (jobTable.getIO(jobID) > 0) 
-			{
+			else if (jobTable.getIO(jobID) > 0) {
 				// System.out.println("-I/O: Job has pending I/O");
 				cpuScheduler.block();
-				if (memoryManager.smartSwap()) 
-				{
+				if (memoryManager.smartSwap()) {
 					swapper.swapOut(jobID);
 				}
 				ioScheduler.moveIO(jobID);
 			}
 			// If job not using I/O and no pending I/O, ignore
-			else 
-			{
+			else {
 				// System.out.println("-I/O: Job has no pending I/O");
 			}
 		}

@@ -50,12 +50,10 @@ public class JobTable
 
 	public static boolean doingIO(int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			return table.get(jobID - 1).latched;
 		}
-		else 
-		{
+		else {
 			return false;
 		}
 	}
@@ -102,13 +100,11 @@ public class JobTable
 
 	public static int getTimeLeft (int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			return (table.get(jobID - 1).maxCPUTime - 
 				table.get(jobID - 1).currentCPUTime);
 		}
-		else 
-		{
+		else {
 			return -1;
 		}
 	}
@@ -135,24 +131,20 @@ public class JobTable
 
 	public static boolean isBlocked(int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			return table.get(jobID - 1).blocked;
 		}
-		else 
-		{
+		else {
 			return false;
 		}
 	}
 
 	public static boolean isReady(int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			return table.get(jobID - 1).ready;
 		}
-		else 
-		{
+		else {
 			return false;
 		}
 	}
@@ -207,12 +199,10 @@ public class JobTable
 
 	public static Job returnJob (int jobID) 
 	{
-		if (table.get(jobID - 1) != null) 
-		{
+		if (table.get(jobID - 1) != null) {
 			return table.get(jobID - 1);
 		}
-		else 
-		{
+		else {
 			return null;
 		}
 	}
@@ -224,8 +214,7 @@ public class JobTable
 
 	public static void setBlocked (int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			// System.out.println("-JobTable sets " + jobID + " to blocked");
 			table.get(jobID - 1).blocked = true;
 		}
@@ -239,8 +228,7 @@ public class JobTable
 
 	public static void setDoingIO (int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			// System.out.println("-JobTable sets " + jobID + " to latched");
 			table.get(jobID - 1).latched = true;
 		}
@@ -248,8 +236,7 @@ public class JobTable
 
 	public static void setReady (int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			// System.out.println("-JobTable sets " + jobID + " as ready");
 			table.get(jobID - 1).ready = true;
 		}
@@ -277,8 +264,7 @@ public class JobTable
 
 	public static void unsetBlocked (int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			// System.out.println("-JobTable sets " + jobID + " to unblocked");
 			table.get(jobID - 1).blocked = false;
 		}
@@ -286,8 +272,7 @@ public class JobTable
 
 	public static void unsetDoingIO (int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			// System.out.println("-JobTable sets " + jobID + " to unlatched");
 			table.get(jobID - 1).latched = false;
 		}
@@ -295,8 +280,7 @@ public class JobTable
 
 	public static void unsetReady (int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			// System.out.println("-JobTable sets " + jobID + " to unready");
 			table.get(jobID - 1).ready = false;
 		}

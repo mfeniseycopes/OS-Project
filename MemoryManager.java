@@ -53,21 +53,17 @@ public class MemoryManager
 	 */
 	void addToQueues (int jobID) 
 	{
-		if (JobTable.getAddress(jobID) == -1) 
-		{
+		if (JobTable.getAddress(jobID) == -1) {
 			blockedQueue.remove((Integer)jobID);
 			unswappedQueue.remove((Integer)jobID);
 			swappedQueue.remove((Integer)jobID);
-			if (JobTable.isBlocked(jobID)) 
-			{
+			if (JobTable.isBlocked(jobID)) {
 				blockedQueue.add(jobID);
 			}
-			else if (JobTable.getSwapped(jobID)) 
-			{
+			else if (JobTable.getSwapped(jobID)) {
 				swappedQueue.add(jobID);
 			}
-			else 
-			{
+			else {
 				unswappedQueue.add(jobID);
 			}
 		}
@@ -86,13 +82,11 @@ public class MemoryManager
 		// See if we can find free space
 		swapInJob = findFreeSpace();
 		// If freespace is found
-		if (swapInJob != -1) 
-		{
+		if (swapInJob != -1) {
 			// Update address in jobTable
 			// System.out.println("--" + swapInJob + " added and sent to swapper");
 		}
-		else 
-		{
+		else {
 			// System.out.println("--No Space found");
 		}
 
@@ -110,16 +104,16 @@ public class MemoryManager
 	{
 		// set initial address/job to invalid
 		int jobID = -1;
-		if (!unswappedQueue.isEmpty()) 
-		{
+		// Checks unswapped first
+		if (!unswappedQueue.isEmpty()) {
 			jobID = iterateFreeSpace(unswappedQueue);
 		}
-		else if (!swappedQueue.isEmpty()) 
-		{
+		// Then swapped, but only if unswapped is empty
+		else if (!swappedQueue.isEmpty()) {
 			jobID = iterateFreeSpace(swappedQueue);
 		}
-		else if (!blockedQueue.isEmpty()) 
-		{
+		// Then blocked, but only if both unswapped & swapped are empty
+		else if (!blockedQueue.isEmpty()) {
 			jobID = iterateFreeSpace(blockedQueue);
 		}
 		return jobID;
@@ -135,8 +129,7 @@ public class MemoryManager
 	{
 		int jobID = -1;
 		int address = -1;
-		for (int j = 0; j < queue.size(); j++) 
-		{
+		for (int j = 0; j < queue.size(); j++) {
 			// Gets next element of queue
 			int jobSize = JobTable.getSize(queue.get(j));
 			// System.out.println("--Checking for " + jobSize 
@@ -144,20 +137,16 @@ public class MemoryManager
 
 			// Checks freeSpaceTable for first available memory location
 			FreeSpace iterator;
-			for (int i = 0; i < freeSpaceTable.size(); i++) 
-			{
+			for (int i = 0; i < freeSpaceTable.size(); i++) {
 				iterator = freeSpaceTable.get(i);
 				// System.out.println("---FreeSpace : Address=" + 
 				// 	iterator.start + " Size=" + iterator.size);
 
 				// If the space will hold new job
-				if (iterator.size >= jobSize) 
-				{
-					if (jobSize > 40) 
-					{
+				if (iterator.size >= jobSize) {
+					if (jobSize > 40) {
 						if (iterator.start + jobSize > 60 && 
-							iterator.start < 50) 
-						{
+							iterator.start < 50) {
 							break;
 						}
 					}
@@ -170,13 +159,11 @@ public class MemoryManager
 						new FreeSpace(iterator.start, iterator.size);
 
 					freeSpaceTable.remove(i);
-					if (iterator.size != 0) 
-					{
+					if (iterator.size != 0) {
 						freeSpaceTable.add(i, newSpace);
 						// System.out.println("----New : Address=" + newSpace.start + " Size=" + newSpace.size);
 					}
-					else 
-					{
+					else {
 						// System.out.println("----Used entire space");
 					}
 					jobID = queue.get(j);
@@ -185,14 +172,12 @@ public class MemoryManager
 					break;
 				}
 				// If the space is too small
-				else 
-				{
+				else {
 					// System.out.println("----Too small");
 				}
 			}
 			// Checks whether freespace was found for job and ends iterative check
-			if (address != -1) 
-			{
+			if (address != -1) {
 				break;
 			}
 		}
@@ -215,8 +200,7 @@ public class MemoryManager
 	public int add (int jobID) 
 	{
 		// If the job is not in memory or in the queue already & is valid
-		if (jobID != -1 && !jobsInMemory.contains((Integer)jobID)) 
-		{
+		if (jobID != -1 && !jobsInMemory.contains((Integer)jobID)) {
 			// Sets swap direction to-Memory
 			JobTable.setDirection(jobID, 0);	
 			// System.out.println ("-MemoryManager adds job " + 
@@ -227,8 +211,7 @@ public class MemoryManager
 			jobID = findFreeSpace();
 			return jobID;
 		}
-		else 
-		{
+		else {
 			return -1;
 		}
 	}
@@ -239,8 +222,7 @@ public class MemoryManager
 	 */
 	public void addToMemory (int jobID) 
 	{
-		if (jobID != -1) 
-		{
+		if (jobID != -1) {
 			//memQueue.remove((Integer)jobID);
 			jobsInMemory.add(jobID);
 		}
@@ -254,8 +236,7 @@ public class MemoryManager
 	 */
 	public void free (int jobID)
 	{
-		if (jobID != -1 && !JobTable.doingIO(jobID)) 
-		{
+		if (jobID != -1 && !JobTable.doingIO(jobID)) {
 			// System.out.println("-MemoryManager begins to free job " + jobID + " with " + JobTable.getTimeLeft(jobID) + " left");
 
 			// Variables needed in iteration
@@ -272,8 +253,7 @@ public class MemoryManager
 			// then add it back into the memqueue
 			if (JobTable.getTimeLeft(jobID) > 0 && 
 				!JobTable.isTerminated(jobID) &&
-					!JobTable.isBlocked(jobID))
-			{
+					!JobTable.isBlocked(jobID)) {
 				JobTable.setDirection(jobID, 0);
 				// System.out.println("ADDEDTOQUEUS");
 				addToQueues(jobID);
@@ -282,8 +262,7 @@ public class MemoryManager
 			// Free the space
 			// First check to see if current freespace can be appended to
 			boolean append = false;
-			for (int i = 0; i < freeSpaceTable.size(); i++) 
-			{
+			for (int i = 0; i < freeSpaceTable.size(); i++) {
 				iterator = freeSpaceTable.get(i);
 				// Status print
 				// System.out.println("--Job to Free start=" + job.address + 
@@ -294,13 +273,11 @@ public class MemoryManager
 				// Check to see if perfect fit between freespaces
 				// If freespace does not start at zero && there is 
 				// another freespace
-				if ((i + 1) < freeSpaceTable.size()) 
-				{
+				if ((i + 1) < freeSpaceTable.size()) {
 					iterator2 = freeSpaceTable.get(i+1);
 					// If the boundaries match on both sides
 					if (job.address == (iterator.start + iterator.size) && 
-					   (job.address + job.size) == iterator2.start) 
-					{
+					   (job.address + job.size) == iterator2.start) {
 					   	// Details to print
 						// System.out.println("--Freespace appended btw");
 						// System.out.println("--Existing1: Address=" + 
@@ -327,8 +304,7 @@ public class MemoryManager
 					}
 				}
 				// If freedspace ends at existing freespace
-				if (job.address == (iterator.start + iterator.size))
-				{
+				if (job.address == (iterator.start + iterator.size)) {
 					// Details to print
 					// System.out.println("--Freespace appended to end");
 					// System.out.println("--Addition : Address=" + 
@@ -349,8 +325,7 @@ public class MemoryManager
 					break;
 				}
 				// If freedspace starts at existing freespace
-				if ((job.address + job.size) == iterator.start) 
-				{
+				if ((job.address + job.size) == iterator.start) {
 					// Details to print
 					// System.out.println("--Freespace appended to start");
 					// System.out.println("--Existing : Address=" +
@@ -372,40 +347,33 @@ public class MemoryManager
 				}
 			}
 			// If the space couldn't be appended, need to add into correct location
-			if (!append) 
-			{
+			if (!append) {
 				// System.out.println("--New freespace added : " +
 				// 	job.address + ", " + job.size);
 				newSpace = new FreeSpace(job.address, job.size);
-				for (int i = 0; i < freeSpaceTable.size(); i++) 
-				{
+				for (int i = 0; i < freeSpaceTable.size(); i++) {
 					iterator = freeSpaceTable.get(i);
-					if (i == 0 && newSpace.start < iterator.start) 
-					{
+					if (i == 0 && newSpace.start < iterator.start) {
 						// System.out.println("---At "+ i);
 						freeSpaceTable.add(i, newSpace);
 						break;
 					}
-					if ( (i+1) < freeSpaceTable.size()) 
-					{
+					if ( (i+1) < freeSpaceTable.size()) {
 						iterator2 = freeSpaceTable.get(i+1);
 						if (iterator.start < newSpace.start
-							&& newSpace.start < iterator2.start)
-						{
+							&& newSpace.start < iterator2.start) {
 							// System.out.println("---At "+ (i+1));
 							freeSpaceTable.add(i+1, newSpace);
 							break;	
 						}
 					}
-					if ( i == freeSpaceTable.size()-1) 
-					{
+					if ( i == freeSpaceTable.size()-1) {
 						// System.out.println("---At end");
 						freeSpaceTable.add(newSpace);
 						break;
 					}
 				}
-				if (freeSpaceTable.isEmpty()) 
-				{
+				if (freeSpaceTable.isEmpty()) {
 					freeSpaceTable.add(newSpace);						
 				}
 			}
@@ -420,10 +388,8 @@ public class MemoryManager
 	 */
 	public void freeTerminated() 
 	{
-		for (int i = 0; i < terminated.size(); i++) 
-		{
-			if (JobTable.getIO(terminated.get(i)) == 0) 
-			{
+		for (int i = 0; i < terminated.size(); i++) {
+			if (JobTable.getIO(terminated.get(i)) == 0) {
 				free(terminated.remove(i));
 			}
 		}
@@ -435,14 +401,11 @@ public class MemoryManager
 	 */
 	public void newTerminated(int jobID) 
 	{
-		if (jobID != -1) 
-		{
-			if (JobTable.getIO(jobID) > 0 || JobTable.doingIO(jobID)) 
-			{
+		if (jobID != -1) {
+			if (JobTable.getIO(jobID) > 0 || JobTable.doingIO(jobID)) {
 				terminated.add(jobID);
 			}
-			else 
-			{
+			else {
 				free(jobID);
 			}
 		}
@@ -495,19 +458,15 @@ public class MemoryManager
 	public boolean smartSwap () 
 	{
 		int blockedCount = 0;
-		for (int i = 0; i < jobsInMemory.size(); i++) 
-		{
-			if (JobTable.isBlocked(jobsInMemory.get(i))) 
-			{
+		for (int i = 0; i < jobsInMemory.size(); i++) {
+			if (JobTable.isBlocked(jobsInMemory.get(i))) {
 				blockedCount++;
 			}
 		}
-		if (blockedCount > 0) 
-		{
+		if (blockedCount > 0) {
 			return true;
 		}
-		else 
-		{
+		else {
 			return false;
 		}
 	}

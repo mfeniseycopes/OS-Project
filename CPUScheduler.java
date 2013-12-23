@@ -35,12 +35,10 @@ public class CPUScheduler
 	 */
 	int getSlice(int jobID, int currentSlice) 
 	{
-		if (JobTable.getTimeLeft(jobID) < currentSlice) 
-		{
+		if (JobTable.getTimeLeft(jobID) < currentSlice) {
 			return JobTable.getTimeLeft(jobID);
 		}
-		else 
-		{
+		else {
 			return currentSlice;
 		}
 	}
@@ -81,12 +79,10 @@ public class CPUScheduler
 		// Will 
 		int[] returnVars = {-1, -1}; // {freeMemory, swapOut}
 
-		if (runningJob != -1) 
-		{
+		if (runningJob != -1) {
 
 			// If time remains in slice, continue
-			if (slice > 0) 
-			{
+			if (slice > 0) {
 				slice = getSlice(runningJob, slice);
 				// Running stays the same
 				// System.out.println("-CPUScheduler resumes Job " + runningJob
@@ -94,8 +90,7 @@ public class CPUScheduler
 			}
 			// Check to see if job has exceeded its max CPU time
 			// If it has, then need to free it's memory and terminate it
-			else if (JobTable.getTimeLeft(runningJob) <= 0) 
-			{
+			else if (JobTable.getTimeLeft(runningJob) <= 0) {
 				// System.out.println("-CPUScheduler stops Job " + runningJob + 
 				// 	" (exceeds max CPU time)");
 				returnVars[0] = runningJob;
@@ -107,16 +102,14 @@ public class CPUScheduler
 			// memory. If it has, then need to lower its priority and return
 			// to memManager for potential swapout
 			else if ((os.currentTime - JobTable.getPriorityTime(runningJob))
-				>= RUN_WAIT) 
-			{
+				>= RUN_WAIT) {
 				if (!JobTable.doingIO(runningJob) && queue.size() > 4) 
 				{
 					returnVars[1] = runningJob;
 					//JobTable.lowerPriority(runningJob);
 					JobTable.unsetReady(runningJob);
 				}
-				else 
-				{
+				else {
 					queue.add(runningJob);
 					//queue.lowerPriority(runningJob);
 				}
@@ -124,27 +117,23 @@ public class CPUScheduler
 			}
 			// The job has no slice remaining and needs to be put at back of 
 			// queue
-			else 
-			{
+			else {
 				queue.add(runningJob);
 				runningJob = -1;
 			}
 		}
 		// If there is no running job yet
-		if (runningJob == -1 && !queue.isEmpty()) 
-		{
+		if (runningJob == -1 && !queue.isEmpty()) {
 			runningJob = queue.remove();
 			// System.out.println("Next job = " + runningJob);
 			slice = getSlice(runningJob, TIMESLICE);
 		}
 		// If there is absolutely nothing in the queues
-		if (runningJob == -1) 
-		{
+		if (runningJob == -1) {
 			// Set CPU to idle
 			a[0] = 1;
 		}
-		else 
-		{
+		else {
 			a[0] = 2;
 			p[1] = runningJob;
 			p[2] = JobTable.getAddress(runningJob);
@@ -182,8 +171,7 @@ public class CPUScheduler
 	{
 		// If the job is not blocked
 		if(!JobTable.isBlocked(jobID) && !JobTable.isReady(jobID) && 
-			!JobTable.isTerminated(jobID)) 
-		{
+			!JobTable.isTerminated(jobID)) {
 			// Then add to appropriate ready queue
 			queue.add(jobID);
 			JobTable.setReady(jobID);
@@ -217,8 +205,7 @@ public class CPUScheduler
 	{
 		int timeElapsed = os.currentTime - os.lastTime;
 		// Increments interrupted job's time time & current slice
-		if (runningJob != -1) 
-		{
+		if (runningJob != -1) {
 			JobTable.incrementTime(runningJob, timeElapsed);
 			slice = slice - timeElapsed;
 		}
